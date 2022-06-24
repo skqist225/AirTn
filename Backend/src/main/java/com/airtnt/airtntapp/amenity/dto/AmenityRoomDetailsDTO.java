@@ -1,4 +1,4 @@
-package com.airtnt.airtntapp.amentity.dto;
+package com.airtnt.airtntapp.amenity.dto;
 
 import com.airtnt.entity.Amentity;
 

@@ -29,7 +29,7 @@ import javax.validation.constraints.Size;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.airtnt.airtntapp.user.dto.PostRegisterUserDTO;
+import com.airtnt.airtntapp.user.dto.RegisterDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -79,11 +79,11 @@ public class User extends BaseEntity {
 	@Column(nullable = false, unique = true)
 	private String email;
 
-	@JsonIgnore
 	@NotEmpty(message = "Mật khẩu không được để trống.")
 	@Size(min = 8, max = 512, message = "Mật khẩu phải ít nhất 8 kí tự.")
 	@Column(nullable = false, length = 255)
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	@JsonIgnore
 	private String password;
 
 	@ManyToOne
@@ -127,40 +127,36 @@ public class User extends BaseEntity {
 
 	@JsonIgnore
 	private LocalDateTime resetPasswordExpirationTime;
-	
+
 	@Transient
-	private String cookie;
+	public String token;
 
 	public User(int id) {
 		super(id);
 	}
 
-	@Override
-	public String toString() {
-		return "User [firstName=" + firstName + ", lastName=" + lastName + "]";
-	}
-
 	@Transient
 	public String getAvatarPath() {
-		if (this.getId() == null || this.avatar == null)
+		if (this.getId() == null || this.avatar == null) {
 			return "/images/default_user_avatar.png";
-		return "/user_images/" + this.getId() + "/" + this.avatar;
+		}
+
+		return String.format("/user_images/%s/%s", this.getId(), this.avatar);
 	}
 
 	@Transient
 	public String getFullName() {
-		return this.firstName + " " + this.lastName;
+		return String.format("%s %s", this.firstName, this.lastName);
 	}
 
 	@Transient
-	public String token;
-
-	@Transient
 	public String getFullPathAddress() {
-		return this.address != null
-				? this.address.getAprtNoAndStreet() + ", " + this.address.getCity().getName() + ", "
-						+ this.address.getState().getName() + ", " + this.address.getCountry().getName()
-				: "";
+		if (this.address != null) {
+			return String.format("%s, %s, %s, %s", this.address.getStreet(), this.address.getCity().getName(),
+					this.address.getState().getName(), this.address.getCountry().getName());
+		}
+
+		return "";
 	}
 
 	@Transient
@@ -172,14 +168,14 @@ public class User extends BaseEntity {
 		ObjectNode cityNode = mapper.createObjectNode();
 
 		if (this.address != null) {
-			Country c = this.address.getCountry();
-			State s = this.address.getState();
+			Country country = this.address.getCountry();
+			State state = this.address.getState();
 			City city = this.address.getCity();
 
-			objectNode.set("country", countryNode.put("id", c.getId()).put("name", c.getName()));
-			objectNode.set("state", stateNode.put("id", s.getId()).put("name", s.getName()));
+			objectNode.set("country", countryNode.put("id", country.getId()).put("name", country.getName()));
+			objectNode.set("state", stateNode.put("id", state.getId()).put("name", state.getName()));
 			objectNode.set("city", cityNode.put("id", city.getId()).put("name", city.getName()));
-			objectNode.put("aprtNoAndStreet", this.address.getAprtNoAndStreet());
+			objectNode.put("street", this.address.getStreet());
 		}
 
 		return objectNode;
@@ -187,12 +183,13 @@ public class User extends BaseEntity {
 
 	@Transient
 	@JsonIgnore
-	public static User buildUser(PostRegisterUserDTO postUser) {
-		return User.builder().firstName(postUser.getFirstName()).lastName(postUser.getLastName())
-				.email(postUser.getEmail()).password(postUser.getPassword())
-				.sex(postUser.getSex().equals("MALE") ? Sex.MALE
-						: (postUser.getSex().equals("FEMALE") ? Sex.FEMALE : Sex.OTHER))
-				.birthday(postUser.getBirthday()).phoneNumber(postUser.getPhoneNumber()).build();
+	public static User buildUser(RegisterDTO registerDTO) {
+		Sex sex = registerDTO.getSex().equals("MALE") ? Sex.MALE
+				: (registerDTO.getSex().equals("FEMALE") ? Sex.FEMALE : Sex.OTHER);
+
+		return User.builder().firstName(registerDTO.getFirstName()).lastName(registerDTO.getLastName())
+				.email(registerDTO.getEmail()).password(registerDTO.getPassword()).sex(sex)
+				.birthday(registerDTO.getBirthday()).phoneNumber(registerDTO.getPhoneNumber()).build();
 	}
 
 	@Transient

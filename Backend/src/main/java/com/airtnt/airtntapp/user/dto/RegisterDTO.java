@@ -13,7 +13,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class PostRegisterUserDTO {
+public class RegisterDTO {
     private String firstName;
     private String lastName;
     private String phoneNumber;

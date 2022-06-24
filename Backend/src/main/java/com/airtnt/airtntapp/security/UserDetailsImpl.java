@@ -67,6 +67,10 @@ public class UserDetailsImpl implements UserDetails {
 	public boolean isEnabled() {
 		return user.isStatus();
 	}
+	
+	public User getUser() {
+		return this.user;
+	}
 
 	public String getFullname() {
 		return this.user.getFirstName() + " " + this.user.getLastName();

@@ -1,20 +1,40 @@
-package com.airtnt.airtntapp.user;
+package com.airtnt.airtntapp.auth;
 
-import com.airtnt.airtntapp.cookie.CookieProcess;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.airtnt.airtntapp.email.SendEmail;
 import com.airtnt.airtntapp.exception.DuplicatedEntryPhoneNumberExeption;
-import com.airtnt.airtntapp.exception.NotAuthenticatedException;
-import com.airtnt.airtntapp.exception.NullCookieException;
 import com.airtnt.airtntapp.exception.UserNotFoundException;
 import com.airtnt.airtntapp.jwt.JwtUtils;
-import com.airtnt.airtntapp.middleware.Authenticate;
 import com.airtnt.airtntapp.response.StandardJSONResponse;
 import com.airtnt.airtntapp.response.error.BadResponse;
-import com.airtnt.airtntapp.response.error.NotAuthenticatedResponse;
 import com.airtnt.airtntapp.response.success.OkResponse;
 import com.airtnt.airtntapp.security.UserDetailsServiceImpl;
-import com.airtnt.airtntapp.user.dto.LoginDTO;
-import com.airtnt.airtntapp.user.dto.PostRegisterUserDTO;
+import com.airtnt.airtntapp.user.UserService;
+import com.airtnt.airtntapp.user.dto.RegisterDTO;
 import com.airtnt.airtntapp.user.dto.ResetPasswordByPhoneNumberDTO;
 import com.airtnt.airtntapp.user.dto.ResetPasswordDTO;
 import com.airtnt.airtntapp.user.response.ForgotPasswordResponse;
@@ -23,37 +43,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthRestController {
 	@Autowired
 	private UserService userService;
-
-	@Autowired
-	private Authenticate authenticate;
-
-	@Autowired
-	private CookieProcess cookiePorcess;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -68,33 +63,8 @@ public class AuthRestController {
 	private JwtUtils jwtUtils;
 
 	@PostMapping("login")
-	public ResponseEntity<StandardJSONResponse<User>> login(@RequestBody LoginDTO loginDTO) {
-		try {
-			System.out.println("sfadfsad");
-			System.out.println(loginDTO.getEmail());
-			System.out.println(loginDTO.getPassword());
-
-			User user = userService.findByEmail(loginDTO.getEmail());
-			String cookie = cookiePorcess.writeCookie("user", user.getEmail());
-			user.setCookie(cookie.split(";")[0]);
-			if (!userService.isPasswordMatch(loginDTO.getPassword(), user.getPassword()))
-				return new BadResponse<User>("Incorrect password").response();
-
-			return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie)
-					.body(new StandardJSONResponse<User>(true, user, null));
-
-		} catch (UserNotFoundException e) {
-			return new BadResponse<User>(e.getMessage()).response();
-		}
-	}
-
-	@PostMapping("login2")
 	public ResponseEntity<StandardJSONResponse<User>> login2(@RequestBody LoginDTO loginDTO) {
 		try {
-			System.out.println("sfadfsad");
-			System.out.println(loginDTO.getEmail());
-			System.out.println(loginDTO.getPassword());
-
 			authenticationManager
 					.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
 
@@ -112,19 +82,8 @@ public class AuthRestController {
 	}
 
 	@GetMapping("logout")
-	public ResponseEntity<StandardJSONResponse<String>> logout(
-			@CookieValue(value = "user", required = false) String cookie) {
-		try {
-			User user = authenticate.getLoggedInUser(cookie);
-			user.setCookie(null);
-
-			return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookiePorcess.writeCookie("user", null))
-					.body(new StandardJSONResponse<String>(true, "Log out successfully", null));
-		} catch (NullCookieException ex) {
-			return new BadResponse<String>(ex.getMessage()).response();
-		} catch (NotAuthenticatedException ex) {
-			return new NotAuthenticatedResponse<String>().response();
-		}
+	public ResponseEntity<StandardJSONResponse<String>> logout() {	
+		return new OkResponse<String>("Log out successfully").response();
 	}
 
 	@GetMapping("check-phonenumber/{phoneNumber}")
@@ -149,9 +108,8 @@ public class AuthRestController {
 	}
 
 	@PostMapping("register")
-	public ResponseEntity<StandardJSONResponse<User>> registerUser(@Validated @RequestBody PostRegisterUserDTO postUser,
+	public ResponseEntity<StandardJSONResponse<User>> registerUser(@Validated @RequestBody RegisterDTO postUser,
 			HttpServletResponse res) throws JsonProcessingException {
-		// check email exists
 
 		ArrayNode arrays = objectMapper.createArrayNode();
 		try {
@@ -159,7 +117,6 @@ public class AuthRestController {
 			if (!isDuplicatedEmail)
 				return new BadResponse<User>("Email has already been taken").response();
 
-			// create new user
 			User savedUser;
 			try {
 				savedUser = userService.save(User.buildUser(postUser));
@@ -202,12 +159,11 @@ public class AuthRestController {
 			user.setResetPasswordExpirationTime(LocalDateTime.now().plusMinutes(30));
 			userService.saveUser(user);
 
-			return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookiePorcess.writeCookie("user", null))
-					.body(new StandardJSONResponse<ForgotPasswordResponse>(true,
-							new ForgotPasswordResponse(resetPasswordCode,
-									"Your reset password link has been sent to your email: " + user.getEmail(),
-									user.getEmail()),
-							null));
+			String message = "Your reset password link has been sent to your email: " + user.getEmail();
+			ForgotPasswordResponse forgotPasswordResponse = new ForgotPasswordResponse(resetPasswordCode, message,
+					email);
+
+			return new OkResponse<ForgotPasswordResponse>(forgotPasswordResponse).response();
 		} catch (UserNotFoundException e) {
 			return new BadResponse<ForgotPasswordResponse>(e.getMessage()).response();
 		}

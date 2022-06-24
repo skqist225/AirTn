@@ -3,7 +3,7 @@ package com.airtnt.airtntapp.room;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.airtnt.airtntapp.amentity.dto.AmenityRoomDetailsDTO;
+import com.airtnt.airtntapp.amenity.dto.AmenityRoomDetailsDTO;
 import com.airtnt.airtntapp.booking.BookedDateDTO;
 import com.airtnt.airtntapp.booking.BookingService;
 import com.airtnt.airtntapp.calendar.CalendarClass;

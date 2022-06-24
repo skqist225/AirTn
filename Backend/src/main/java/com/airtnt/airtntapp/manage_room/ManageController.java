@@ -3,7 +3,7 @@ package com.airtnt.airtntapp.manage_room;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.airtnt.airtntapp.amentity.AmentityService;
+import com.airtnt.airtntapp.amenity.AmentityService;
 import com.airtnt.airtntapp.category.CategoryService;
 import com.airtnt.airtntapp.country.CountryService;
 import com.airtnt.airtntapp.privacy.PrivacyTypeService;

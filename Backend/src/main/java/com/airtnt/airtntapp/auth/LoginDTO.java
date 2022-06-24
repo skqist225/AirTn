@@ -1,4 +1,4 @@
-package com.airtnt.airtntapp.user.dto;
+package com.airtnt.airtntapp.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,30 +1,24 @@
 package com.airtnt.airtntapp.user;
 
-import com.airtnt.airtntapp.country.CountryRepository;
-import com.airtnt.airtntapp.exception.DuplicatedEntryPhoneNumberExeption;
-import com.airtnt.airtntapp.exception.UserNotFoundException;
-import com.airtnt.airtntapp.security.UserDetailsImpl;
-import com.airtnt.airtntapp.security.UserDetailsImpl;
-import com.airtnt.airtntapp.user.admin.RoleRepository;
-import com.airtnt.entity.Country;
-import com.airtnt.entity.Role;
-import com.airtnt.entity.User;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import com.airtnt.airtntapp.country.CountryRepository;
+import com.airtnt.airtntapp.exception.DuplicatedEntryPhoneNumberExeption;
+import com.airtnt.airtntapp.exception.UserNotFoundException;
+import com.airtnt.entity.Country;
+import com.airtnt.entity.Role;
+import com.airtnt.entity.User;
 
 @Service
 @Transactional
@@ -32,10 +26,7 @@ public class UserService {
 	public static final int USERS_PER_PAGE = 4;
 
 	@Autowired
-	private RoleRepository roleRepo;
-
-	@Autowired
-	private CountryRepository countryRepo;
+	private CountryRepository countryRepository;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -146,12 +137,8 @@ public class UserService {
 		return userRepository.save(user);
 	}
 
-	public List<Role> listRoles() {
-		return (List<Role>) roleRepo.findAll();
-	}
-
 	public List<Country> listCountries() {
-		return (List<Country>) countryRepo.findAll();
+		return (List<Country>) countryRepository.findAll();
 	}
 
 	public void delete(Integer id) throws UserNotFoundException {

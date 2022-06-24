@@ -7,13 +7,9 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import com.airtnt.airtntapp.FileUploadUtil;
-import com.airtnt.airtntapp.host.dto.GetUploadPhotosDTO;
-import com.airtnt.airtntapp.response.StandardJSONResponse;
-import com.airtnt.airtntapp.response.success.OkResponse;
 import com.airtnt.airtntapp.room.RoomService;
 import com.airtnt.entity.Image;
 import com.airtnt.entity.Room;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.json.JSONObject;
 import org.springframework.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 
 @RestController
@@ -129,10 +124,11 @@ public class HostRestController {
 		object.put("status", "success");
 		object.put("roomImages", multipartFiles);
 		System.out.println(multipartFiles.toString());
-//		ObjectMapper objectMapper = new ObjectMapper();
+		// ObjectMapper objectMapper = new ObjectMapper();
 
-//		return new OkResponse<GetUploadPhotosDTO>(
-//				new GetUploadPhotosDTO("success", objectMapper.writeValueAsString(multipartFiles))).response();
+		// return new OkResponse<GetUploadPhotosDTO>(
+		// new GetUploadPhotosDTO("success",
+		// objectMapper.writeValueAsString(multipartFiles))).response();
 
 		return object.toString();
 	}

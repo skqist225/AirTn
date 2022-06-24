@@ -4,7 +4,7 @@ import java.beans.Transient;
 import java.util.List;
 import java.util.Set;
 
-import com.airtnt.airtntapp.amentity.dto.AmenityRoomDetailsDTO;
+import com.airtnt.airtntapp.amenity.dto.AmenityRoomDetailsDTO;
 import com.airtnt.airtntapp.booking.BookedDateDTO;
 import com.airtnt.airtntapp.review.dto.ReviewDTO;
 import com.airtnt.entity.PriceType;

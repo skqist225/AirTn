@@ -50,19 +50,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/api/listings/**").authenticated()
-                .antMatchers(HttpMethod.POST, "/api/booking/*/create").authenticated()
-                .antMatchers(HttpMethod.GET, "/api/booking/*/canceled", "/api/booking/*/approved").hasRole("Host")
-				.antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/progress/**",
-                        "/user/bookings", "/hosting/listings/*", "/wishlists*",
-                        "/become-a-host/*",
-                        "/user/personal-info", "/user/add-to-wishlists/*", "/user/remove-from-wishlists/*", "/booking/**")
-                .authenticated()
-				.anyRequest().authenticated()
-				.and().formLogin().loginPage("/login").usernameParameter("email").permitAll().and().logout().permitAll()
-				.and().rememberMe().rememberMeCookieName("rememberme").key("remember-me-token")
-				.tokenValiditySeconds(365 * 24 * 60 * 60).alwaysRemember(true);
+//                .antMatchers(HttpMethod.GET, "/api/listings/**").authenticated()
+//                .antMatchers(HttpMethod.POST, "/api/booking/*/create").authenticated()
+//                .antMatchers(HttpMethod.GET, "/api/booking/*/canceled", "/api/booking/*/approved").hasRole("Host")
+				.antMatchers("/api/auth/login").permitAll()
+//                .antMatchers("/progress/**",
+//                        "/user/bookings", "/hosting/listings/*", "/wishlists*",
+//                        "/become-a-host/*",
+//                        "/user/personal-info", "/user/add-to-wishlists/*", "/user/remove-from-wishlists/*", "/booking/**")
+//                .authenticated()
+				.anyRequest().authenticated();
 
 		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 	}

@@ -1,4 +1,4 @@
-package com.airtnt.airtntapp.amentity.category;
+package com.airtnt.airtntapp.amenity.category;
 
 import java.util.List;
 

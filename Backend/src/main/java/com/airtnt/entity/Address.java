@@ -42,13 +42,13 @@ public class Address {
 	private City city;
 
 	@Column(name = "apartment_no_street")
-	private String aprtNoAndStreet;
+	private String street;
 
-	public Address(Country country, State state, City city, String aprtNoAndStreet) {
+	public Address(Country country, State state, City city, String street) {
 		this.country = country;
 		this.state = state;
 		this.city = city;
-		this.aprtNoAndStreet = aprtNoAndStreet;
+		this.street = street;
 	}
 
 }
