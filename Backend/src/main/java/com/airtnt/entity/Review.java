@@ -36,7 +36,7 @@ public class Review extends BaseEntity {
 
 	@Embedded
 	private SubRating subRating;
-
+	
 	@Transient
 	public float getFinalRating() {
 		return this.subRating.getFinalRating();

@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Service;
 
 import com.airtnt.airtntapp.FileUploadUtil;
 import com.airtnt.airtntapp.amenity.AmentityService;
-import com.airtnt.airtntapp.amenity.dto.AmenityRoomDetailsDTO;
 import com.airtnt.airtntapp.city.CityRepository;
 import com.airtnt.airtntapp.exception.RoomNotFoundException;
 import com.airtnt.airtntapp.privacy.PrivacyTypeRepository;
@@ -84,21 +82,17 @@ public class RoomService {
 		return roomRepository.save(room);
 	}
 
-	public List<Room> getRoomsByHostId(User host) {
-		Iterator<Room> itr = roomRepository.findByHost(host).iterator();
-		List<Room> rooms = new ArrayList<>();
-		itr.forEachRemaining(rooms::add);
-		return rooms;
+	public List<Room> getRoomsByHost(User host) {
+		return roomRepository.findByHost(host);
 	}
 
-	public Room getRoomById(int id) {
+	public Room getRoomById(int id) throws RoomNotFoundException {
 		Optional<Room> optionalRoom = roomRepository.findById(id);
-		Room room = new Room();
 		if (optionalRoom.isPresent()) {
-			room = optionalRoom.get();
+			return optionalRoom.get();
+		} else {
+			throw new RoomNotFoundException(String.format("Could not find room with id %d", id));
 		}
-
-		return room;
 	}
 
 	public Page<Room> getRoomsByHost(User host, int pageNumber, Map<String, String> filters) {

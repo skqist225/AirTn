@@ -3,7 +3,6 @@ package com.airtnt.airtntapp.amenity.dto;
 import com.airtnt.entity.Amentity;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,17 +11,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class AmenityRoomDetailsDTO {
-    private Integer id;
-    private String icon;
-    private String name;
+	private Integer id;
+	private String icon;
+	private String name;
 
-    public static AmenityRoomDetailsDTO buildAmenityRoomDetailsDTO(Amentity a) {
-        return AmenityRoomDetailsDTO.builder()
-                .id(a.getId())
-                .icon(a.getIconImagePath())
-                .name(a.getName())
-                .build();
-    }
+	public static AmenityRoomDetailsDTO build(Amentity amentity) {
+		return new AmenityRoomDetailsDTO(amentity.getId(), amentity.getIconImagePath(), amentity.getName());
+	}
 }

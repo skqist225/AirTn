@@ -60,7 +60,7 @@ public class RoomDetailsDTO {
 
         @Transient
         @JsonIgnore
-        public static RoomDetailsDTO buildRoomDetailsDTO(Room room, List<ReviewDTO> reviewDTOs, List<String> images,
+        public static RoomDetailsDTO buildRoomDetailsDTO(Room room, List<ReviewDTO> reviewDTOs,
                         List<AmenityRoomDetailsDTO> amenityRoomDetailsDTOs, HostDTO hostDTO,
                         List<BookedDateDTO> bookedDates,
                         float avgRatings) {
@@ -72,10 +72,9 @@ public class RoomDetailsDTO {
                 
                 return RoomDetailsDTO.builder()
                                 .thumbnail(room.renderThumbnailImage())
-                                .amenities(
-                                                amenityRoomDetailsDTOs)
+                                .amenities(amenityRoomDetailsDTOs)
                                 .rules(room.getRules())
-                                .images(images)
+                                .images(room.getImagesPath())
                                 .reviews(reviewDTOs)
                                 .id(room.getId())
                                 .name(room.getName())

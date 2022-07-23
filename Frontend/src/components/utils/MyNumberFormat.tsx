@@ -3,7 +3,6 @@ import NumberFormat from "react-number-format";
 export interface IMoneyForMat {
     price: number;
     currency: string;
-    stayType?: string;
     stayTypeFontSize?: string;
     priceFontSize?: string;
     priceFontWeight?: string;
@@ -17,14 +16,12 @@ export interface IMoneyForMat {
 export default function MyNumberForMat({
     price,
     currency,
-    stayType,
     stayTypeFontSize,
     priceFontSize,
     priceFontWeight,
     isPrefix,
     isSuffix,
     color,
-    removeSplash = false,
     removeStayType = false,
 }: IMoneyForMat) {
     return (
@@ -51,14 +48,14 @@ export default function MyNumberForMat({
                                     </span>
                                     {!removeStayType && (
                                         <span style={{ fontSize: stayTypeFontSize, color }}>
-                                            / {stayType}
+                                            / đêm
                                         </span>
                                     )}
                                 </>
                             ) : (
                                 <>
                                     <span className='rdt__price'>{formattedValue}</span>
-                                    {!removeStayType && <span className='fs-16'>{stayType}</span>}
+                                    {!removeStayType && <span className='fs-16'>đêm</span>}
                                 </>
                             )}
                         </div>
@@ -85,14 +82,14 @@ export default function MyNumberForMat({
                                     </span>
                                     {!removeStayType && (
                                         <span style={{ fontSize: stayTypeFontSize, color }}>
-                                            / {stayType}
+                                            / đêm
                                         </span>
                                     )}
                                 </>
                             ) : (
                                 <>
                                     <span className='rdt__price'>{formattedValue} </span>
-                                    {!removeStayType && <span className='fs-16'>{stayType}</span>}
+                                    {!removeStayType && <span className='fs-16'>đêm</span>}
                                 </>
                             )}
                         </div>
@@ -118,14 +115,14 @@ export default function MyNumberForMat({
                                     </span>
                                     {!removeStayType && (
                                         <span style={{ fontSize: stayTypeFontSize, color }}>
-                                            / {stayType}
+                                            / đêm
                                         </span>
                                     )}
                                 </>
                             ) : (
                                 <>
                                     <span className='rdt__price'>{formattedValue} </span>
-                                    {!removeStayType && <span className='fs-16'>{stayType}</span>}
+                                    {!removeStayType && <span className='fs-16'>đêm</span>}
                                 </>
                             )}
                         </div>

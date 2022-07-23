@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import com.airtnt.airtntapp.FileUploadUtil;
+import com.airtnt.airtntapp.exception.RoomNotFoundException;
 import com.airtnt.airtntapp.room.RoomService;
 import com.airtnt.entity.Image;
 import com.airtnt.entity.Room;
@@ -56,7 +57,7 @@ public class HostRestController {
 	}
 
 	@PostMapping("update/upload-room-photos")
-	public String updatedUploadRoomPhotos(@ModelAttribute PhotoDTO payload) throws IOException {
+	public String updatedUploadRoomPhotos(@ModelAttribute PhotoDTO payload) throws IOException, NumberFormatException, RoomNotFoundException {
 		String uploadDir = !payload.getHost().equals("test@gmail.com")
 				? STATIC_PATH + payload.getHost() + "/" + payload.getRoomId()
 				: STATIC_PATH + payload.getHost();

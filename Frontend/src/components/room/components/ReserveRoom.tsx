@@ -81,7 +81,6 @@ const ReserveRoom: FC<IReserveRoomProps> = ({ room }) => {
                         isPrefix
                         price={room!.price}
                         currency={room!.currencySymbol}
-                        stayType={room!.stayType}
                         priceFontSize='22px'
                         priceFontWeight='600'
                         stayTypeFontSize='16px'
@@ -134,7 +133,6 @@ const ReserveRoom: FC<IReserveRoomProps> = ({ room }) => {
                                         isPrefix
                                         price={room!.price}
                                         currency={room!.currencySymbol}
-                                        stayType={room!.stayType}
                                         priceFontSize='16px'
                                         stayTypeFontSize='16px'
                                         removeStayType

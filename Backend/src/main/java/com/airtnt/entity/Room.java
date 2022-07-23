@@ -11,10 +11,11 @@ import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -24,13 +25,10 @@ import java.util.*;
 public class Room extends BaseEntity {
 
 	@Builder
-	public Room(
-			Integer id, String name, Set<Image> images, String thumbnail, byte rating,
-			Address address, int bedroomCount, int bathroomCount,
-			int accomodatesCount, int bedCount, Currency currency,
+	public Room(Integer id, String name, Set<Image> images, String thumbnail, byte rating, Address address,
+			int bedroomCount, int bathroomCount, int accomodatesCount, int bedCount, Currency currency,
 			Category category, String description, Set<Amentity> amentities, float latitude, float longitude,
-			float price, RoomPrivacy privacyType, User host,
-			Set<Rule> rules, boolean status) {
+			float price, RoomPrivacy privacyType, User host, Set<Rule> rules, boolean status) {
 		super(status);
 		this.name = name;
 		this.images = images;
@@ -129,16 +127,15 @@ public class Room extends BaseEntity {
 	@Transient
 	public String renderThumbnailImage() {
 		if (this.host.getEmail().equals("test@gmail.com")) {
-			return "/room_images/" + this.host.getEmail() + "/" + this.thumbnail;
-		}
-		else {
-			return "/room_images/" + this.host.getEmail() + "/" + this.getId() + "/" + this.thumbnail;
+			return String.format("/room_images/%s/%s", this.host.getEmail(), this.thumbnail);
+		} else {
+			return String.format("/room_images/%s/%s/%s", this.host.getEmail(), this.getId(), this.thumbnail);
 		}
 	}
 
 	@Transient
-	public static Room buildRoom(PostAddRoomDTO payload, Set<Image> images, Set<Amentity> amenities,
-			Address address, Set<Rule> rules, boolean status) {
+	public static Room buildRoom(PostAddRoomDTO payload, Set<Image> images, Set<Amentity> amenities, Address address,
+			Set<Rule> rules, boolean status) {
 		return Room.builder().name(payload.getName()).accomodatesCount(payload.getAccomodatesCount())
 				.bathroomCount(payload.getBathroomCount()).bedCount(payload.getBedCount())
 				.bedroomCount(payload.getBedroomCount()).description(payload.getDescription()).amentities(amenities)
@@ -151,17 +148,18 @@ public class Room extends BaseEntity {
 
 	@Transient
 	public long calculateHowManyDaysFromPastToCurrent() {
-		SimpleDateFormat df1 = new SimpleDateFormat("yyyy");
-		SimpleDateFormat df2 = new SimpleDateFormat("MM");
-		SimpleDateFormat df3 = new SimpleDateFormat("dd");
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-		String year = df1.format(this.getUpdatedDate());
-		String month = df2.format(this.getUpdatedDate());
-		String day = df3.format(this.getUpdatedDate());
-
-		LocalDate dateBefore = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
+		LocalDate dateBefore = LocalDate.parse(this.getUpdatedDate().toString(), dtf);
 		LocalDate currentdate = LocalDate.now();
-		LocalDate dateAfter = LocalDate.of(currentdate.getYear(), currentdate.getMonth(), currentdate.getDayOfMonth());
-		return ChronoUnit.DAYS.between(dateBefore, dateAfter);
+
+		return ChronoUnit.DAYS.between(dateBefore, currentdate);
+	}
+
+	@Transient
+	public List<String> getImagesPath() {
+		return this.getImages().stream().filter(image -> !image.getImage().equals(this.thumbnail)).map(image -> {
+			return image.getImagePath(this.host.getEmail(), this.getId());
+		}).collect(Collectors.toList());
 	}
 }

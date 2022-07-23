@@ -2,7 +2,7 @@ import { FC, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { Room } from './Room';
-import { fetchWishlistsIDsOfCurrentUser } from '../../features/user/userSlice';
+import { fetchWishlistsIDsOfCurrentUser, userState } from '../../features/user/userSlice';
 import { addClickEventForLoveButton } from './script/add_to_wishlists';
 
 import { IRoom } from '../../types/room/type_Room';
@@ -14,7 +14,7 @@ interface IRoomsProps {
 export const Rooms: FC<IRoomsProps> = ({ rooms }) => {
     const dispatch = useDispatch();
     const { user, wishlistsIDs, wishlistsIDsFetching } = useSelector(
-        (state: RootState) => state.user
+        userState
     );
 
     useEffect(() => {

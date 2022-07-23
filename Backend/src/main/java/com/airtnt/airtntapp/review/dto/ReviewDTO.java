@@ -31,7 +31,7 @@ public class ReviewDTO {
 
     @Transient
     @JsonIgnore
-    public static ReviewDTO buildReviewDTO(Review review) {
+    public static ReviewDTO build(Review review) {
         return ReviewDTO.builder()
                 .comment(review.getComment())
                 .customerName(review.getBooking().getCustomer().getFullName())

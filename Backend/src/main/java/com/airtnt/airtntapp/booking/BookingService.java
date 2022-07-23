@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -94,7 +95,7 @@ public class BookingService {
                 : false;
     }
 
-    public Booking createBooking(String checkin, String checkout, Room room, int numberOfDays, String clientMessage,
+    public Booking createBooking(String checkin, String checkout, Room room, String clientMessage,
             User customer, String userToken)
             throws ParseException, RoomHasBeenBookedException, UserHasBeenBookedThisRoomException {
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
@@ -168,7 +169,7 @@ public class BookingService {
         List<Booking> bookings = bookingRepository.getBookedRoomsByUser(customerId, query);
         List<BookedRoomDTO> bookedRoomDTOs = new ArrayList<>();
         for (Booking booking : bookings)
-            bookedRoomDTOs.add(BookedRoomDTO.buildBookedRoomDTO(booking));
+            bookedRoomDTOs.add(BookedRoomDTO.build(booking));
         return bookedRoomDTOs;
     }
 
@@ -396,7 +397,7 @@ public class BookingService {
                 }
 
                 predicates
-                        .add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("totalFee"), totalFee)));
+                        .add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(, totalFee)));
 
                 // criteriaQuery.orderBy(criteriaBuilder.desc(bookingdDate),
                 // criteriaBuilder.desc(bookingId));
@@ -515,6 +516,10 @@ public class BookingService {
         } catch (NoSuchElementException ex) {
             throw new BookingNotFoundException("could not find booking with id: " + id);
         }
+    }
+    
+    public List<Integer> getBookingIdsByRoom(Room room) {
+    	return bookingRepository.getBookingIdsByRoom(room);
     }
 
     public Integer getNumberOfBooking() {

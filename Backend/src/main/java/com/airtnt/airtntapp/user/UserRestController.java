@@ -3,6 +3,7 @@ package com.airtnt.airtntapp.user;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.airtnt.airtntapp.exception.RoomNotFoundException;
 import com.airtnt.airtntapp.exception.UserNotFoundException;
 import com.airtnt.airtntapp.room.RoomService;
 import com.airtnt.airtntapp.security.UserDetailsImpl;
@@ -24,119 +25,128 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/user/")
 public class UserRestController {
 
-    @Autowired
-    private RoomService roomService;
+	@Autowired
+	private RoomService roomService;
 
-    @Autowired
-    private UserService userService;
+	@Autowired
+	private UserService userService;
 
-    private Map<String, String> checkConstraint = new HashMap<>();
+	private Map<String, String> checkConstraint = new HashMap<>();
 
-    @PostMapping("check-password-constraint")
-    public String checkPasswordConstaint(@RequestBody Map<String, String> payLoad,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) throws UserNotFoundException {
-        Integer userId = Integer.parseInt(payLoad.get("userId").toString());
-        User currentUser = userService.findById(userId);
-        String oldPassword = payLoad.get("oldPassword").toString();
-        String newPassword = payLoad.get("newPassword").toString();
+	@PostMapping("check-password-constraint")
+	public String checkPasswordConstaint(@RequestBody Map<String, String> payLoad,
+			@AuthenticationPrincipal UserDetailsImpl userDetails) throws UserNotFoundException {
+		Integer userId = Integer.parseInt(payLoad.get("userId").toString());
+		User currentUser = userService.findById(userId);
+		String oldPassword = payLoad.get("oldPassword").toString();
+		String newPassword = payLoad.get("newPassword").toString();
 
-        checkConstraint.put("oldPasswordError", "Vui lòng nhập mật khẩu cũ.");
-        checkConstraint.put("newPasswordError", "Vui lòng nhập mật khẩu mới.");
+		checkConstraint.put("oldPasswordError", "Vui lòng nhập mật khẩu cũ.");
+		checkConstraint.put("newPasswordError", "Vui lòng nhập mật khẩu mới.");
 
-        JSONObject jsonObject = new JSONObject();
+		JSONObject jsonObject = new JSONObject();
 
-        if (oldPassword.isEmpty() && newPassword.isEmpty()) {
-            jsonObject.put("oldPasswordError", checkConstraint.get("oldPasswordError")).put("newPasswordError",
-                    checkConstraint.get("newPasswordError"));
+		if (oldPassword.isEmpty() && newPassword.isEmpty()) {
+			jsonObject.put("oldPasswordError", checkConstraint.get("oldPasswordError")).put("newPasswordError",
+					checkConstraint.get("newPasswordError"));
 
-            return jsonObject.toString();
-        }
-        if (oldPassword.isEmpty()) {
-            jsonObject.put("oldPasswordError", checkConstraint.get("oldPasswordError"));
-            return jsonObject.toString();
-        }
-        if (newPassword.isEmpty()) {
-            jsonObject.put("newPasswordError", checkConstraint.get("newPasswordError"));
-            return jsonObject.toString();
-        }
+			return jsonObject.toString();
+		}
+		if (oldPassword.isEmpty()) {
+			jsonObject.put("oldPasswordError", checkConstraint.get("oldPasswordError"));
+			return jsonObject.toString();
+		}
+		if (newPassword.isEmpty()) {
+			jsonObject.put("newPasswordError", checkConstraint.get("newPasswordError"));
+			return jsonObject.toString();
+		}
 
-        if (!userService.isPasswordMatch(oldPassword, currentUser.getPassword())) {
-            jsonObject.put("oldPasswordError", "Mật khẩu cũ không hợp lệ!!!");
-            return jsonObject.toString();
-        }
+		if (!userService.isPasswordMatch(oldPassword, currentUser.getPassword())) {
+			jsonObject.put("oldPasswordError", "Mật khẩu cũ không hợp lệ!!!");
+			return jsonObject.toString();
+		}
 
-        if (newPassword.length() < 8) {
-            jsonObject.put("newPasswordError", "Mật khẩu mới phải ít nhất 8 kí tự.");
-            return jsonObject.toString();
-        }
+		if (newPassword.length() < 8) {
+			jsonObject.put("newPasswordError", "Mật khẩu mới phải ít nhất 8 kí tự.");
+			return jsonObject.toString();
+		}
 
-        return jsonObject.put("status", "OK").toString();
-    }
+		return jsonObject.put("status", "OK").toString();
+	}
 
-    @PostMapping("check-first-name-and-last-name-constraint")
-    public String checkFirstNameAndLastNameConstraint(@RequestBody Map<String, String> payLoad) {
+	@PostMapping("check-first-name-and-last-name-constraint")
+	public String checkFirstNameAndLastNameConstraint(@RequestBody Map<String, String> payLoad) {
 
-        String firstName = payLoad.get("firstName").toString();
-        String lastName = payLoad.get("lastName").toString();
+		String firstName = payLoad.get("firstName").toString();
+		String lastName = payLoad.get("lastName").toString();
 
-        JSONObject jsonObject = new JSONObject();
+		JSONObject jsonObject = new JSONObject();
 
-        checkConstraint.put("firstNameError", "Vui lòng nhập tên.");
-        checkConstraint.put("lastNameError", "Vui lòng nhập họ.");
+		checkConstraint.put("firstNameError", "Vui lòng nhập tên.");
+		checkConstraint.put("lastNameError", "Vui lòng nhập họ.");
 
-        if (firstName.isEmpty() && lastName.isEmpty()) {
-            jsonObject.put("firstNameError", checkConstraint.get("firstNameError")).put("lastNameError",
-                    checkConstraint.get("lastNameError"));
+		if (firstName.isEmpty() && lastName.isEmpty()) {
+			jsonObject.put("firstNameError", checkConstraint.get("firstNameError")).put("lastNameError",
+					checkConstraint.get("lastNameError"));
 
-            return jsonObject.toString();
-        }
-        if (firstName.isEmpty()) {
-            jsonObject.put("firstNameError", checkConstraint.get("firstNameError"));
-            return jsonObject.toString();
-        }
-        if (lastName.isEmpty()) {
-            jsonObject.put("lastNameError", checkConstraint.get("lastNameError"));
-            return jsonObject.toString();
-        }
+			return jsonObject.toString();
+		}
+		if (firstName.isEmpty()) {
+			jsonObject.put("firstNameError", checkConstraint.get("firstNameError"));
+			return jsonObject.toString();
+		}
+		if (lastName.isEmpty()) {
+			jsonObject.put("lastNameError", checkConstraint.get("lastNameError"));
+			return jsonObject.toString();
+		}
 
-        return jsonObject.put("status", "OK").toString();
-    }
+		return jsonObject.put("status", "OK").toString();
+	}
 
-    @PostMapping("check-email-constraint")
-    public String checkEmailConstraint(@RequestBody Map<String, String> payLoad,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String email = payLoad.get("email").toString();
-        Integer userId = Integer.parseInt(payLoad.get("userId").toString());
+	@PostMapping("check-email-constraint")
+	public String checkEmailConstraint(@RequestBody Map<String, String> payLoad,
+			@AuthenticationPrincipal UserDetailsImpl userDetails) {
+		String email = payLoad.get("email").toString();
+		Integer userId = Integer.parseInt(payLoad.get("userId").toString());
 
-        return userService.isEmailUnique(userId, email) ? "OK" : "Duplicated";
-    }
+		return userService.isEmailUnique(userId, email) ? "OK" : "Duplicated";
+	}
 
-    @GetMapping("add-to-wishlists/{roomId}")
-    public String addToWishLists(@AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable("roomId") Integer roomId) throws UserNotFoundException {
-        Room room = roomService.getRoomById(roomId);
-        User user = userService.findByEmail(userDetails.getUsername());
+	@GetMapping("add-to-wishlists/{roomId}")
+	public String addToWishLists(@AuthenticationPrincipal UserDetails userDetails,
+			@PathVariable("roomId") Integer roomId) throws UserNotFoundException {
+		try {
+			Room room = roomService.getRoomById(roomId);
 
-        user.addToWishLists(room);
-        User savedUser = userService.saveUser(user);
+			User user = userService.findByEmail(userDetails.getUsername());
 
-        if (savedUser != null)
-            return "success";
-        return "failure";
-    }
+			user.addToWishLists(room);
+			User savedUser = userService.saveUser(user);
 
-    @GetMapping("remove-from-wishlists/{roomId}")
-    public String removeFromWishLists(@AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable("roomId") Integer roomId) throws UserNotFoundException {
-        Room room = roomService.getRoomById(roomId);
-        User user = userService.findByEmail(userDetails.getUsername());
+			if (savedUser != null)
+				return "success";
+			return "failure";
+		} catch (RoomNotFoundException e) {
+			return e.getMessage();
+		}
+	}
 
-        user.removeFromWishLists(room);
-        User savedUser = userService.saveUser(user);
+	@GetMapping("remove-from-wishlists/{roomId}")
+	public String removeFromWishLists(@AuthenticationPrincipal UserDetails userDetails,
+			@PathVariable("roomId") Integer roomId) throws UserNotFoundException {
+		try {
+			Room room = roomService.getRoomById(roomId);
 
-        if (savedUser != null)
-            return "success";
-        return "failure";
-    }
+			User user = userService.findByEmail(userDetails.getUsername());
 
+			user.removeFromWishLists(room);
+			User savedUser = userService.saveUser(user);
+
+			if (savedUser != null)
+				return "success";
+			return "failure";
+		} catch (RoomNotFoundException e) {
+			return "failure";
+		}
+	}
 }

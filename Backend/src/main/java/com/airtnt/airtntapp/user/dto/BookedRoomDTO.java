@@ -21,13 +21,13 @@ import lombok.Setter;
 public class BookedRoomDTO {
     private Integer bookingId;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDateTime bookingDate;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private Date checkinDate;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private Date checkoutDate;
 
     private float pricePerDay;
@@ -48,7 +48,7 @@ public class BookedRoomDTO {
     private String bookingReview;
     private SubRating reviewRating;
 
-    public static BookedRoomDTO buildBookedRoomDTO(Booking b) {
+    public static BookedRoomDTO build(Booking b) {
         String roomThumbnail = b.getRoom().renderThumbnailImage();
         String userFullName = b.getRoom().getHost().getFullName();
         String userAvatar = b.getRoom().getHost().getAvatarPath();

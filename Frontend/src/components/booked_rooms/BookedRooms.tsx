@@ -528,11 +528,6 @@ const BookedRoom: FC<IBookedRoomProps> = ({ booking, ratingLabels }) => {
                                                         <MyNumberForMat
                                                             currency={booking.currency}
                                                             price={booking.pricePerDay}
-                                                            stayType={
-                                                                booking.priceType == "PER_NIGHT"
-                                                                    ? "đêm"
-                                                                    : "tuần"
-                                                            }
                                                             priceFontSize='16px'
                                                             stayTypeFontSize='16px'
                                                         />
@@ -555,11 +550,6 @@ const BookedRoom: FC<IBookedRoomProps> = ({ booking, ratingLabels }) => {
                                                     <MyNumberForMat
                                                         price={booking.siteFee}
                                                         currency={booking.currency}
-                                                        stayType={
-                                                            booking.priceType == "PER_NIGHT"
-                                                                ? "đêm"
-                                                                : "tuần"
-                                                        }
                                                     />
                                                 </span>
                                             </div>
@@ -568,11 +558,7 @@ const BookedRoom: FC<IBookedRoomProps> = ({ booking, ratingLabels }) => {
                                             <div className='fw-600 fs-16'>Thời gian ở:</div>
                                             <div className='normal-flex fw-600 jc-fe f1'>
                                                 {booking.numberOfDays}
-                                                <span style={{ marginLeft: "5px" }}>
-                                                    {booking.priceType === "PER_NIGHT"
-                                                        ? "đêm"
-                                                        : "tuần"}
-                                                </span>
+                                                <span style={{ marginLeft: "5px" }}>đêm</span>
                                             </div>
                                         </Div>
                                     </div>
@@ -727,62 +713,60 @@ const BookedRoom: FC<IBookedRoomProps> = ({ booking, ratingLabels }) => {
                                                                 }
                                                                 className='ratingContainer'
                                                             >
-                                                                {ratingLabels.map(
-                                                                    (rating, index) => (
+                                                                {ratingLabels.map(rating => (
+                                                                    <div
+                                                                        className='normal-flex jc-sb'
+                                                                        data-rating-name={
+                                                                            rating.label
+                                                                        }
+                                                                        key={rating.label}
+                                                                    >
+                                                                        <label>
+                                                                            {rating.label}
+                                                                        </label>
                                                                         <div
-                                                                            className='normal-flex jc-sb'
-                                                                            data-rating-name={
-                                                                                rating.label
-                                                                            }
-                                                                            key={rating.label}
-                                                                        >
-                                                                            <label>
-                                                                                {rating.label}
-                                                                            </label>
-                                                                            <div
-                                                                                className='
+                                                                            className='
                                                                                 normal-flex
                                                                                 ratingStarContainer
                                                                             '
-                                                                                data-label={
-                                                                                    rating.label
-                                                                                }
-                                                                            >
-                                                                                {rating.stars.map(
-                                                                                    (star, idx) => (
-                                                                                        <div>
-                                                                                            <svg
-                                                                                                enableBackground='new 0 0 15 15'
-                                                                                                viewBox='0 0 15 15'
-                                                                                                x='0'
-                                                                                                y='0'
-                                                                                                data-star-value={
-                                                                                                    idx +
-                                                                                                    1
-                                                                                                }
-                                                                                                className='
+                                                                            data-label={
+                                                                                rating.label
+                                                                            }
+                                                                        >
+                                                                            {rating.stars.map(
+                                                                                (star, idx) => (
+                                                                                    <div>
+                                                                                        <svg
+                                                                                            enableBackground='new 0 0 15 15'
+                                                                                            viewBox='0 0 15 15'
+                                                                                            x='0'
+                                                                                            y='0'
+                                                                                            data-star-value={
+                                                                                                idx +
+                                                                                                1
+                                                                                            }
+                                                                                            className='
                                                                                             ratingStar
                                                                                         '
-                                                                                                key={
-                                                                                                    star +
-                                                                                                    idx +
-                                                                                                    1
-                                                                                                }
-                                                                                            >
-                                                                                                <polygon
-                                                                                                    points='7.5 .8 9.7 5.4 14.5 5.9 10.7 9.1 11.8 14.2 7.5 11.6 3.2 14.2 4.3 9.1 .5 5.9 5.3 5.4'
-                                                                                                    strokeLinecap='round'
-                                                                                                    strokeLinejoin='round'
-                                                                                                    strokeMiterlimit='10'
-                                                                                                ></polygon>
-                                                                                            </svg>
-                                                                                        </div>
-                                                                                    )
-                                                                                )}
-                                                                            </div>
+                                                                                            key={
+                                                                                                star +
+                                                                                                idx +
+                                                                                                1
+                                                                                            }
+                                                                                        >
+                                                                                            <polygon
+                                                                                                points='7.5 .8 9.7 5.4 14.5 5.9 10.7 9.1 11.8 14.2 7.5 11.6 3.2 14.2 4.3 9.1 .5 5.9 5.3 5.4'
+                                                                                                strokeLinecap='round'
+                                                                                                strokeLinejoin='round'
+                                                                                                strokeMiterlimit='10'
+                                                                                            ></polygon>
+                                                                                        </svg>
+                                                                                    </div>
+                                                                                )
+                                                                            )}
                                                                         </div>
-                                                                    )
-                                                                )}
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                             <div>
                                                                 <div>
@@ -807,10 +791,7 @@ const BookedRoom: FC<IBookedRoomProps> = ({ booking, ratingLabels }) => {
                                                                                 handleSetRatingComment
                                                                             }
                                                                             disabled={
-                                                                                ratingComment !==
-                                                                                null
-                                                                                    ? true
-                                                                                    : false
+                                                                                !!ratingComment
                                                                             }
                                                                             placeholder='Để lại bình luận ở đây!'
                                                                         />

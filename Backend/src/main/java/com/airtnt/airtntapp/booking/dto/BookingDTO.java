@@ -17,14 +17,15 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class BookingDTO {
-    private Integer id;
-    @JsonFormat(pattern = "dd-MM-yyyy")
-    private LocalDateTime bookingDate;
-    private String currencySymbol;
-    private long lastUpdated;
+	private Integer id;
+	@JsonFormat(pattern = "dd-MM-yyyy")
+	private LocalDateTime bookingDate;
+	private String currencySymbol;
+	private long lastUpdated;
 
-    public static BookingDTO buildBookingDTO(Booking booking) {
-        return new BookingDTO(booking.getId(), booking.getBookingDate(),
-                booking.getRoom().getCurrency().getSymbol(), 0);
-    }
+	public static BookingDTO build(Booking booking) {
+		return BookingDTO.builder().id(booking.getId()).bookingDate(booking.getBookingDate())
+				.currencySymbol(booking.getRoom().getCurrency().getSymbol()).lastUpdated(booking.getLastUpdated())
+				.build();
+	}
 }

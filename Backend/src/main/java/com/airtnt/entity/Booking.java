@@ -77,9 +77,9 @@ public class Booking extends BaseEntity {
 
 	@Transient
 	public long getNumberOfDays() {
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-		LocalDate startDate = LocalDate.parse(this.checkinDate.toString(), dtf);
-		LocalDate endDate = LocalDate.parse(this.checkoutDate.toString(), dtf);
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate startDate = LocalDate.parse(this.checkinDate.toString().split(" ")[0], dtf);
+		LocalDate endDate = LocalDate.parse(this.checkoutDate.toString().split(" ")[0], dtf);
 
 		return ChronoUnit.DAYS.between(startDate, endDate);
 	}
@@ -88,7 +88,11 @@ public class Booking extends BaseEntity {
 	public float getPricePerDay() {
 		return this.getRoom().getPrice();
 	}
+	
+	@Transient 
+	private float totalFee;
 
+	@Transient
 	public float getTotalFee() {
 		return  this.getPricePerDay() * this.getNumberOfDays() + this.getSiteFee() + this.getCleanFee();
 	}

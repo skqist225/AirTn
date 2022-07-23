@@ -76,6 +76,9 @@ public interface BookingRepository extends JpaRepository<Booking, Integer>, JpaS
 
         @Query("SELECT b FROM Booking b WHERE b.room.id IN (:roomIds) AND b.id = :bookingId ORDER BY b.bookingDate DESC")
         public Page<Booking> getBookingListByRooms(List<Integer> roomIds, Integer bookingId, Pageable pageable);
+        
+        @Query("SELECT b.id FROM Booking b WHERE b.room = :room")
+        public List<Integer> getBookingIdsByRoom(Room room);
 
         // admin -----------------------------
 

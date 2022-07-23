@@ -18,26 +18,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class RoomHomePageDTO {
-    private String thumbnail;
-    private List<String> images;
-    private List<Integer> likedByUsers;
-    private float price;
-    private String name;
-    private String currencySymbol;
-    private Integer id;
-    private String stayType;
+	private Integer id;
+	private String name;
+	private String thumbnail;
+	private List<String> images;
+	private List<Integer> likedByUsers;
+	private float price;
+	private String currencySymbol;
 
-    @Transient
-    @JsonIgnore
-    public static RoomHomePageDTO buildRoomHomePageDTO(Room room, List<String> images, List<Integer> likedByUsers) {
-        return RoomHomePageDTO.builder()
-                .name(room.getName())
-                .thumbnail(room.renderThumbnailImage())
-                .images(images)
-                .price(room.getPrice())
-                .currencySymbol(room.getCurrency().getSymbol())
-                .likedByUsers(likedByUsers)
-                .id(room.getId())
-                .build();
-    }
+	@Transient
+	@JsonIgnore
+	public static RoomHomePageDTO build(Room room, List<Integer> likedByUsers) {
+		return RoomHomePageDTO.builder().id(room.getId()).name(room.getName()).thumbnail(room.renderThumbnailImage())
+				.images(room.getImagesPath()).likedByUsers(likedByUsers).price(room.getPrice())
+				.currencySymbol(room.getCurrency().getSymbol()).build();
+	}
 }

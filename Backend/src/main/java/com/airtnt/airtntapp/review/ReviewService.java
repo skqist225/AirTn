@@ -13,11 +13,11 @@ public class ReviewService {
     @Autowired
     private ReviewRepository reviewRepository;
 
-    public List<Review> getReviewsByBookings(Integer[] bookingIds) {
+    public List<Review> getReviewsByBookings(List<Integer> bookingIds) {
         return reviewRepository.getReviewsByBookings(bookingIds);
     }
 
-    public List<Review> getReviewsByBookings(Integer[] bookingIds, Float numberOfStars) {
+    public List<Review> getReviewsByBookings(Integer[] bookingIds, double numberOfStars) {
         return numberOfStars == 0 ? reviewRepository.getAllReviewsByBookings(bookingIds, numberOfStars)
                 : reviewRepository.getReviewsByBookingsAndNumberOfStars(bookingIds, numberOfStars);
     }
