@@ -34,7 +34,7 @@ public class ReviewService {
         return reviewRepository.getReviewByIdRoom(id);
     }
 
-    public Integer getTotalRatingByIdRoom(Integer id) {
-        return reviewRepository.getTotalRatingByIdRoom(id);
-    }
+    // public Integer getTotalRatingByIdRoom(Integer id) {
+    //     return reviewRepository.getTotalRatingByIdRoom(id);
+    // }
 }

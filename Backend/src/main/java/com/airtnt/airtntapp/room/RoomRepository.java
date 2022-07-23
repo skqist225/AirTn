@@ -24,6 +24,9 @@ public interface RoomRepository extends JpaRepository<Room, Integer>, JpaSpecifi
         @Query(value = "SELECT r.id FROM Room r WHERE r.host = :host")
         public List<Integer> getRoomIdByHost(User host);
 
+        @Query("SELECT AVG(r.price) FROM Room r")
+        public double getAverageRoomPrice();
+
         @Query("SELECT r FROM Room r JOIN r.amentities ra JOIN r.bookings rb WHERE r.category.id = :categoryId AND r.status = :status"
                         + " AND r.name LIKE %:query%"
                         + " AND r.price >= :minPrice AND r.price <= :maxPrice"

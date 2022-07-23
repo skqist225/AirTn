@@ -23,6 +23,7 @@ export interface IUser extends IRegisterUser {
     avatarPath: string;
     fullPathAddress: string;
     addressDetails: IAddress;
+    token: string;
 }
 
 export interface IRatingLabel {

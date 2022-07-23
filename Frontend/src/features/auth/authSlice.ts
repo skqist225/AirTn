@@ -7,19 +7,6 @@ import { IRegisterUser, IUser } from "../../types/user/type_User";
 import { setUserToLocalStorage } from "../common";
 import { setUser } from "../user/userSlice";
 
-export const resetPassword = createAsyncThunk(
-    "auth/resetPassword",
-    async (resetPasswordData: IResetPassword, { rejectWithValue }) => {
-        try {
-            const { data } = await api.put(`/auth/reset-password`, resetPasswordData);
-
-            return { data };
-        } catch ({ data: { errorMessage } }) {
-            return rejectWithValue(errorMessage);
-        }
-    }
-);
-
 export const login = createAsyncThunk(
     "auth/login",
     async (loginInfo: ILogin, { rejectWithValue, dispatch }) => {
@@ -36,6 +23,20 @@ export const login = createAsyncThunk(
         }
     }
 );
+
+export const resetPassword = createAsyncThunk(
+    "auth/resetPassword",
+    async (resetPasswordData: IResetPassword, { rejectWithValue }) => {
+        try {
+            const { data } = await api.put(`/auth/reset-password`, resetPasswordData);
+
+            return { data };
+        } catch ({ data: { errorMessage } }) {
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
 
 export const forgotPassword = createAsyncThunk(
     "auth/forgotPassword",

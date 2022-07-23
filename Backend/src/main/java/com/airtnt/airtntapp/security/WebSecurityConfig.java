@@ -53,13 +53,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .antMatchers(HttpMethod.GET, "/api/listings/**").authenticated()
 //                .antMatchers(HttpMethod.POST, "/api/booking/*/create").authenticated()
 //                .antMatchers(HttpMethod.GET, "/api/booking/*/canceled", "/api/booking/*/approved").hasRole("Host")
-				.antMatchers("/api/auth/login").permitAll()
+				.antMatchers("/api/auth/login", "/api/categories", "/api/amenities", "/api/rooms/**", "/api/room-privacy").permitAll()
 //                .antMatchers("/progress/**",
 //                        "/user/bookings", "/hosting/listings/*", "/wishlists*",
 //                        "/become-a-host/*",
 //                        "/user/personal-info", "/user/add-to-wishlists/*", "/user/remove-from-wishlists/*", "/booking/**")
 //                .authenticated()
-				.anyRequest().authenticated();
+				.anyRequest().permitAll();
 
 		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 	}

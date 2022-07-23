@@ -13,7 +13,8 @@ import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,20 +31,17 @@ import com.airtnt.airtntapp.email.SendEmail;
 import com.airtnt.airtntapp.exception.AlreadyCancelException;
 import com.airtnt.airtntapp.exception.BookingNotFoundException;
 import com.airtnt.airtntapp.exception.ForbiddenException;
-import com.airtnt.airtntapp.exception.NotAuthenticatedException;
-import com.airtnt.airtntapp.exception.NullCookieException;
 import com.airtnt.airtntapp.exception.RoomHasBeenBookedException;
 import com.airtnt.airtntapp.exception.UserHasBeenBookedThisRoomException;
 import com.airtnt.airtntapp.firebase.FirebaseInitialize;
-import com.airtnt.airtntapp.middleware.Authenticate;
 import com.airtnt.airtntapp.response.StandardJSONResponse;
 import com.airtnt.airtntapp.response.error.BadResponse;
 import com.airtnt.airtntapp.response.error.ForbiddenResponse;
-import com.airtnt.airtntapp.response.error.NotAuthenticatedResponse;
 import com.airtnt.airtntapp.response.error.NotFoundResponse;
 import com.airtnt.airtntapp.response.success.OkResponse;
 import com.airtnt.airtntapp.review.ReviewService;
 import com.airtnt.airtntapp.room.RoomService;
+import com.airtnt.airtntapp.security.UserDetailsImpl;
 import com.airtnt.entity.Booking;
 import com.airtnt.entity.Review;
 import com.airtnt.entity.SubRating;
@@ -60,9 +58,6 @@ public class BookingRestController {
 	private BookingService bookingService;
 
 	@Autowired
-	private Authenticate authenticate;
-
-	@Autowired
 	private FirebaseInitialize firebaseInitialize;
 
 	@Autowired
@@ -70,86 +65,74 @@ public class BookingRestController {
 
 	@GetMapping(value = "/{roomid}/create")
 	public ResponseEntity<StandardJSONResponse<BookingDTO>> createBooking(
-			@CookieValue(value = "user", required = false) String cookie, @PathVariable("roomid") Integer roomId,
+			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, @PathVariable("roomid") Integer roomId,
 			@RequestParam("checkin") String checkin, @RequestParam("checkout") String checkout,
 			@RequestParam("numberOfDays") Integer numberOfDays, @RequestParam("clientMessage") String clientMessage)
 			throws ParseException {
 		try {
-			User customer = authenticate.getLoggedInUser(cookie);
+			User customer = userDetailsImpl.getUser();
 			String userToken = UUID.randomUUID().toString();
 			Booking booking;
-			try {
-				booking = bookingService.createBooking(checkin, checkout, roomService.getRoomById(roomId), numberOfDays,
-						clientMessage, customer, userToken);
+			booking = bookingService.createBooking(checkin, checkout, roomService.getRoomById(roomId), numberOfDays,
+					clientMessage, customer, userToken);
 
-				// if (booking != null) {
-				// firebaseInitialize.initialize();
-				// firebaseInitialize.writeBooking(booking.getId(), booking.getUserToken(),
-				// "Pending");
-				// }
+			// if (booking != null) {
+			// firebaseInitialize.initialize();
+			// firebaseInitialize.writeBooking(booking.getId(), booking.getUserToken(),
+			// "Pending");
+			// }
 
-				return booking != null ? new OkResponse<BookingDTO>(BookingDTO.buildBookingDTO(booking)).response()
-						: new BadResponse<BookingDTO>("Cannot create booking").response();
-			} catch (RoomHasBeenBookedException e) {
-				return new BadResponse<BookingDTO>(e.getMessage()).response();
-			} catch (UserHasBeenBookedThisRoomException e) {
-				return new BadResponse<BookingDTO>(e.getMessage()).response();
-			}
-
-		} catch (NullCookieException ex) {
-			return new BadResponse<BookingDTO>(ex.getMessage()).response();
-		} catch (NotAuthenticatedException ex) {
-			return new NotAuthenticatedResponse<BookingDTO>().response();
+			return booking != null ? new OkResponse<BookingDTO>(BookingDTO.buildBookingDTO(booking)).response()
+					: new BadResponse<BookingDTO>("Cannot create booking").response();
+		} catch (RoomHasBeenBookedException e) {
+			return new BadResponse<BookingDTO>(e.getMessage()).response();
+		} catch (UserHasBeenBookedThisRoomException e) {
+			return new BadResponse<BookingDTO>(e.getMessage()).response();
 		}
+
 	}
 
 	@GetMapping(value = "/{roomid}/create-mobile")
 	public ResponseEntity<StandardJSONResponse<BookingDTO>> createBookingMobile(
-			@CookieValue(value = "user", required = false) String cookie, @PathVariable("roomid") Integer roomId,
+			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, @PathVariable("roomid") Integer roomId,
 			@RequestParam("checkin") String checkin, @RequestParam("checkout") String checkout,
 			@RequestParam("cardNumber") String cardNumber, @RequestParam("cardExp") String cardExp,
 			@RequestParam("cardCVV") String cardCVV, @RequestParam("clientMessage") String clientMessage)
 			throws ParseException {
 		try {
-			User customer = authenticate.getLoggedInUser(cookie);
+			User customer = userDetailsImpl.getUser();
 			String userToken = UUID.randomUUID().toString();
-			try {
-				if (!cardNumber.equals("4242424242424242")) {
-					return new BadResponse<BookingDTO>("Card number does not correct").response();
-				}
-				if (!cardExp.equals("240224")) {
-					return new BadResponse<BookingDTO>("Card exp does not correct").response();
-				}
-				if (!cardCVV.equals("424")) {
-					return new BadResponse<BookingDTO>("Card CVV does not correct").response();
-				}
-
-				LocalDate checkinDate = LocalDate.parse(checkin);
-				LocalDate checkoutDate = LocalDate.parse(checkout);
-
-				long noOfDaysBetween = ChronoUnit.DAYS.between(checkinDate, checkoutDate);
-
-				Booking booking = bookingService.createBooking(checkin, checkout, roomService.getRoomById(roomId),
-						(int) noOfDaysBetween, clientMessage, customer, userToken);
-
-				return booking != null ? new OkResponse<BookingDTO>(BookingDTO.buildBookingDTO(booking)).response()
-						: new BadResponse<BookingDTO>("Cannot create booking").response();
-			} catch (RoomHasBeenBookedException e) {
-				return new BadResponse<BookingDTO>(e.getMessage()).response();
-			} catch (UserHasBeenBookedThisRoomException e) {
-				return new BadResponse<BookingDTO>(e.getMessage()).response();
+			if (!cardNumber.equals("4242424242424242")) {
+				return new BadResponse<BookingDTO>("Card number does not correct").response();
+			}
+			if (!cardExp.equals("240224")) {
+				return new BadResponse<BookingDTO>("Card exp does not correct").response();
+			}
+			if (!cardCVV.equals("424")) {
+				return new BadResponse<BookingDTO>("Card CVV does not correct").response();
 			}
 
-		} catch (NullCookieException ex) {
-			return new BadResponse<BookingDTO>(ex.getMessage()).response();
-		} catch (NotAuthenticatedException ex) {
-			return new NotAuthenticatedResponse<BookingDTO>().response();
+			LocalDate checkinDate = LocalDate.parse(checkin);
+			LocalDate checkoutDate = LocalDate.parse(checkout);
+
+			long noOfDaysBetween = ChronoUnit.DAYS.between(checkinDate, checkoutDate);
+
+			Booking booking = bookingService.createBooking(checkin, checkout, roomService.getRoomById(roomId),
+					(int) noOfDaysBetween, clientMessage, customer, userToken);
+
+			return booking != null ? new OkResponse<BookingDTO>(BookingDTO.buildBookingDTO(booking)).response()
+					: new BadResponse<BookingDTO>("Cannot create booking").response();
+		} catch (RoomHasBeenBookedException e) {
+			return new BadResponse<BookingDTO>(e.getMessage()).response();
+		} catch (UserHasBeenBookedThisRoomException e) {
+			return new BadResponse<BookingDTO>(e.getMessage()).response();
 		}
+
 	}
 
 	@GetMapping(value = "/listings/{page}")
 	public ResponseEntity<StandardJSONResponse<BookingListResponse>> listings(
-			@CookieValue(value = "user", required = false) String cookie, @PathVariable("page") Integer page,
+			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, @PathVariable("page") Integer page,
 			@RequestParam(name = "booking_date_month", required = false, defaultValue = "") String bookingDateMonth,
 			@RequestParam(name = "booking_date_year", required = false, defaultValue = "") String bookingDateYear,
 			@RequestParam(name = "total_fee", required = false, defaultValue = "0") String totalFee,
@@ -159,63 +142,50 @@ public class BookingRestController {
 			@RequestParam(name = "booking_date", required = false, defaultValue = "") String bookingDate,
 			@RequestParam(name = "is_complete", required = false, defaultValue = "") String isComplete)
 			throws ParseException {
-		try {
-			User host = authenticate.getLoggedInUser(cookie);
+		User host = userDetailsImpl.getUser();
 
-			List<Integer> roomIds = roomService.getRoomIdByHost(host);
+		List<Integer> roomIds = roomService.getRoomIdByHost(host);
 
-			Map<String, String> filters = new HashMap<>();
-			filters.put("sortField", sortField);
-			filters.put("sortDir", sortDir);
-			filters.put("query", query);
-			filters.put("isComplete", isComplete);
-			filters.put("bookingDate", bookingDate);
-			filters.put("bookingDateMonth", bookingDateMonth);
-			filters.put("bookingDateYear", bookingDateYear);
-			filters.put("totalFee", totalFee);
+		Map<String, String> filters = new HashMap<>();
+		filters.put("sortField", sortField);
+		filters.put("sortDir", sortDir);
+		filters.put("query", query);
+		filters.put("isComplete", isComplete);
+		filters.put("bookingDate", bookingDate);
+		filters.put("bookingDateMonth", bookingDateMonth);
+		filters.put("bookingDateYear", bookingDateYear);
+		filters.put("totalFee", totalFee);
 
-			BookingListResponse bookings = bookingService.getBookingListByRooms(roomIds, filters, page);
+		BookingListResponse bookings = bookingService.getBookingListByRooms(roomIds, filters, page);
 
-			return new OkResponse<BookingListResponse>(bookings).response();
-		} catch (NullCookieException ex) {
-			return new BadResponse<BookingListResponse>(ex.getMessage()).response();
-		} catch (NotAuthenticatedException ex) {
-			return new NotAuthenticatedResponse<BookingListResponse>().response();
-		}
+		return new OkResponse<BookingListResponse>(bookings).response();
+
 	}
 
 	@PutMapping(value = "/{bookingid}/host/canceled")
 	public ResponseEntity<StandardJSONResponse<String>> hostCancelBooking(@PathVariable("bookingid") Integer bookingid,
-			@CookieValue(value = "user", required = false) String cookie) {
+			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl) throws ForbiddenException {
 		try {
-			User host = authenticate.getLoggedInUser(cookie);
+			User host = userDetailsImpl.getUser();
 			Booking booking;
-			try {
-				booking = bookingService.hostCancelBooking(bookingid, host);
+			booking = bookingService.hostCancelBooking(bookingid, host);
 
-				// firebaseInitialize.initialize();
-				// firebaseInitialize.updateBookingState(booking.getId(), "Rejected");
+			// firebaseInitialize.initialize();
+			// firebaseInitialize.updateBookingState(booking.getId(), "Rejected");
 
-				return booking != null ? new OkResponse<String>("Cancel booking successfully").response()
-						: new BadResponse<String>("Can not cancel booking").response();
-			} catch (BookingNotFoundException e) {
-				return new NotFoundResponse<String>(e.getMessage()).response();
-			}
-
-		} catch (NullCookieException ex) {
-			return new BadResponse<String>(ex.getMessage()).response();
-		} catch (NotAuthenticatedException ex) {
-			return new NotAuthenticatedResponse<String>().response();
-		} catch (ForbiddenException e) {
-			return new ForbiddenResponse<String>().response();
+			return booking != null ? new OkResponse<String>("Cancel booking successfully").response()
+					: new BadResponse<String>("Can not cancel booking").response();
+		} catch (BookingNotFoundException e) {
+			return new NotFoundResponse<String>(e.getMessage()).response();
 		}
+
 	}
 
 	@PutMapping(value = "/{bookingid}/user/canceled")
 	public ResponseEntity<StandardJSONResponse<String>> userCancelBooking(@PathVariable("bookingid") Integer bookingid,
-			@CookieValue(value = "user", required = false) String cookie) throws AddressException, MessagingException {
+			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl) throws AddressException, MessagingException {
 		try {
-			User customer = authenticate.getLoggedInUser(cookie);
+			User customer = userDetailsImpl.getUser();
 			Booking booking;
 			try {
 
@@ -231,10 +201,6 @@ public class BookingRestController {
 			} catch (BookingNotFoundException e) {
 				return new NotFoundResponse<String>(e.getMessage()).response();
 			}
-		} catch (NullCookieException ex) {
-			return new BadResponse<String>(ex.getMessage()).response();
-		} catch (NotAuthenticatedException ex) {
-			return new NotAuthenticatedResponse<String>().response();
 		} catch (ForbiddenException e) {
 			return new ForbiddenResponse<String>(e.getMessage()).response();
 		}
@@ -242,9 +208,9 @@ public class BookingRestController {
 
 	@PutMapping(value = "/{bookingid}/approved")
 	public ResponseEntity<StandardJSONResponse<String>> approveBooking(@PathVariable("bookingid") Integer bookingId,
-			@CookieValue(value = "user", required = false) String cookie) {
+			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
 		try {
-			User customer = authenticate.getLoggedInUser(cookie);
+			User customer = userDetailsImpl.getUser();
 			Booking booking = bookingService.approveBooking(bookingId, customer);
 
 			// firebaseInitialize.initialize();
@@ -255,19 +221,14 @@ public class BookingRestController {
 
 		} catch (ForbiddenException e) {
 			return new ForbiddenResponse<String>().response();
-		} catch (NullCookieException ex) {
-			return new BadResponse<String>(ex.getMessage()).response();
-		} catch (NotAuthenticatedException ex) {
-			return new NotAuthenticatedResponse<String>().response();
 		}
 	}
 
 	@PostMapping(value = "/{bookingId}/create-review")
 	public ResponseEntity<StandardJSONResponse<String>> approveBooking(@PathVariable("bookingId") Integer bookingId,
-			@RequestBody CreateReviewDTO createReviewDTO, @CookieValue(value = "user", required = false) String cookie)
+			@RequestBody CreateReviewDTO createReviewDTO, @AuthenticationPrincipal UserDetailsImpl userDetailsImpl)
 			throws ForbiddenException, BookingNotFoundException {
-		try {
-			User customer = authenticate.getLoggedInUser(cookie);
+			User customer = userDetailsImpl.getUser();
 			Integer cleanlinessRating = createReviewDTO.getCleanlinessRating();
 			Integer contactRating = createReviewDTO.getContactRating();
 			Integer checkinRating = createReviewDTO.getCheckinRating();
@@ -294,11 +255,6 @@ public class BookingRestController {
 			}
 
 			return new OkResponse<String>("OK").response();
-		} catch (NullCookieException ex) {
-			return new BadResponse<String>(ex.getMessage()).response();
-		} catch (NotAuthenticatedException e) {
-			return new NotAuthenticatedResponse<String>().response();
-		}
 
 	}
 }

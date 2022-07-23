@@ -8,28 +8,24 @@ import com.airtnt.airtntapp.booking.BookedDateDTO;
 import com.airtnt.airtntapp.booking.BookingService;
 import com.airtnt.airtntapp.calendar.CalendarClass;
 import com.airtnt.airtntapp.city.CityService;
-import com.airtnt.airtntapp.exception.NotAuthenticatedException;
-import com.airtnt.airtntapp.exception.NullCookieException;
+
 import com.airtnt.airtntapp.exception.RoomNotFoundException;
 import com.airtnt.airtntapp.exception.UserNotFoundException;
-import com.airtnt.airtntapp.middleware.Authenticate;
 import com.airtnt.airtntapp.review.ReviewService;
 import com.airtnt.airtntapp.review.dto.ReviewDTO;
 import com.airtnt.airtntapp.room.dto.HostDTO;
 import com.airtnt.airtntapp.room.dto.PostAddRoomDTO;
 import com.airtnt.airtntapp.room.dto.RoomDetailsDTO;
 import com.airtnt.airtntapp.room.dto.RoomHomePageDTO;
-import com.airtnt.airtntapp.room.dto.RoomPricePerCurrencyDTO;
 import com.airtnt.airtntapp.room.dto.page.listings.RoomListingsDTO;
 import com.airtnt.airtntapp.room.response.CalendarResponseEntity;
 import com.airtnt.airtntapp.room.response.RoomsOwnedByUserResponseEntity;
 import com.airtnt.airtntapp.rule.RuleService;
+import com.airtnt.airtntapp.security.UserDetailsImpl;
 import com.airtnt.airtntapp.state.StateService;
 import com.airtnt.airtntapp.user.UserService;
 import com.airtnt.entity.Room;
 import com.airtnt.airtntapp.response.StandardJSONResponse;
-import com.airtnt.airtntapp.response.error.BadResponse;
-import com.airtnt.airtntapp.response.error.NotAuthenticatedResponse;
 import com.airtnt.airtntapp.response.success.OkResponse;
 
 import org.json.JSONObject;
@@ -40,7 +36,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.CookieValue;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -101,9 +97,6 @@ public class RoomRestController {
 
     @Autowired
     private ReviewService reviewService;
-
-    @Autowired
-    private Authenticate authenticate;
 
     @Autowired
     private Environment env;
@@ -239,8 +232,7 @@ public class RoomRestController {
         for (int i = 0; i < payload.getImages().length; i++) {
             images.add(new Image(payload.getImages()[i]));
         }
-        // PriceType pt = Objects.equals(payload.getPriceType(), PriceType.PER_NIGHT.name()) ? PriceType.PER_NIGHT
-        //         : PriceType.PER_WEEK;
+
         Country country = new Country(payload.getCountry());
 
         // check if state exist
@@ -296,7 +288,7 @@ public class RoomRestController {
 
     @GetMapping("/api/rooms/user/{pageid}")
     public ResponseEntity<StandardJSONResponse<RoomsOwnedByUserResponseEntity>> fetchUserOwnedRooms(
-            @CookieValue(value = "user", required = false) String cookie,
+            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
             @PathVariable("pageid") Integer pageNumber,
             @RequestParam(name = "BATHROOMS", required = false, defaultValue = "0") String bathRoomsCount,
             @RequestParam(name = "BEDROOMS", required = false, defaultValue = "0") String bedRoomsCount,
@@ -306,93 +298,67 @@ public class RoomRestController {
             @RequestParam(name = "SORTFIELD", required = false, defaultValue = "createdDate") String sortField,
             @RequestParam(name = "AMENITY_IDS", required = false, defaultValue = "") String amentitiesFilter,
             @RequestParam(name = "STATUSES", required = false, defaultValue = "ACTIVE UNLISTED") String status) {
-        try {
-            User host = authenticate.getLoggedInUser(cookie);
+        User host = userDetailsImpl.getUser();
 
-            Map<String, String> filters = new HashMap<>();
-            filters.put("bedroomCount", bedRoomsCount);
-            filters.put("bathroomCount", bathRoomsCount);
-            filters.put("bedCount", bedsCount);
-            filters.put("query", query);
-            filters.put("sortDir", sortDir);
-            filters.put("sortField", sortField);
-            filters.put("amentities", amentitiesFilter);
-            filters.put("status", status);
-            List<RoomListingsDTO> roomListingsDTOs = new ArrayList<>();
-            RoomsOwnedByUserResponseEntity roomsOwnedByUserResponseEntity = new RoomsOwnedByUserResponseEntity();
+        Map<String, String> filters = new HashMap<>();
+        filters.put("bedroomCount", bedRoomsCount);
+        filters.put("bathroomCount", bathRoomsCount);
+        filters.put("bedCount", bedsCount);
+        filters.put("query", query);
+        filters.put("sortDir", sortDir);
+        filters.put("sortField", sortField);
+        filters.put("amentities", amentitiesFilter);
+        filters.put("status", status);
+        List<RoomListingsDTO> roomListingsDTOs = new ArrayList<>();
+        RoomsOwnedByUserResponseEntity roomsOwnedByUserResponseEntity = new RoomsOwnedByUserResponseEntity();
 
-            // if (redisTemplate.opsForHash().get("TOTAL_PAGES", "TOTAL_PAGES") != null) {
-            // roomListingsDTOs = redisTemplate.opsForHash().values("ROOM");
+        // if (redisTemplate.opsForHash().get("TOTAL_PAGES", "TOTAL_PAGES") != null) {
+        // roomListingsDTOs = redisTemplate.opsForHash().values("ROOM");
 
-            // roomsOwnedByUserResponseEntity.setRooms(roomListingsDTOs);
-            // roomsOwnedByUserResponseEntity
-            // .setTotalPages((int) redisTemplate.opsForHash().get("TOTAL_PAGES",
-            // "TOTAL_PAGES"));
-            // roomsOwnedByUserResponseEntity
-            // .setTotalRecords((long) redisTemplate.opsForHash().get("TOTAL_ELS",
-            // "TOTAL_ELS"));
-            // } else {
-            Page<Room> roomsPage = roomService.fetchUserOwnedRooms(host, pageNumber, filters);
-            for (Room room : roomsPage.getContent()) {
-                roomListingsDTOs.add(RoomListingsDTO.buildRoomListingsDTO(room));
-                // redisTemplate.opsForHash().put("ROOM", room.getId().toString(),
-                // RoomListingsDTO.buildRoomListingsDTO(room));
-            }
-            // redisTemplate.opsForHash().put("TOTAL_PAGES", "TOTAL_PAGES", (Integer)
-            // roomsPage.getTotalPages());
-            // redisTemplate.opsForHash().put("TOTAL_ELS", "TOTAL_ELS", (Long)
-            // roomsPage.getTotalElements());
-
-            roomsOwnedByUserResponseEntity.setRooms(roomListingsDTOs);
-            roomsOwnedByUserResponseEntity.setTotalPages(roomsPage.getTotalPages());
-            roomsOwnedByUserResponseEntity.setTotalRecords(roomsPage.getTotalElements());
-            // }
-
-            return new OkResponse<RoomsOwnedByUserResponseEntity>(
-                    roomsOwnedByUserResponseEntity)
-                    .response();
-        } catch (
-
-        NullCookieException ex) {
-            return new BadResponse<RoomsOwnedByUserResponseEntity>(ex.getMessage()).response();
-        } catch (NotAuthenticatedException ex) {
-            return new NotAuthenticatedResponse<RoomsOwnedByUserResponseEntity>().response();
+        // roomsOwnedByUserResponseEntity.setRooms(roomListingsDTOs);
+        // roomsOwnedByUserResponseEntity
+        // .setTotalPages((int) redisTemplate.opsForHash().get("TOTAL_PAGES",
+        // "TOTAL_PAGES"));
+        // roomsOwnedByUserResponseEntity
+        // .setTotalRecords((long) redisTemplate.opsForHash().get("TOTAL_ELS",
+        // "TOTAL_ELS"));
+        // } else {
+        Page<Room> roomsPage = roomService.fetchUserOwnedRooms(host, pageNumber, filters);
+        for (Room room : roomsPage.getContent()) {
+            roomListingsDTOs.add(RoomListingsDTO.buildRoomListingsDTO(room));
+            // redisTemplate.opsForHash().put("ROOM", room.getId().toString(),
+            // RoomListingsDTO.buildRoomListingsDTO(room));
         }
+        // redisTemplate.opsForHash().put("TOTAL_PAGES", "TOTAL_PAGES", (Integer)
+        // roomsPage.getTotalPages());
+        // redisTemplate.opsForHash().put("TOTAL_ELS", "TOTAL_ELS", (Long)
+        // roomsPage.getTotalElements());
+
+        roomsOwnedByUserResponseEntity.setRooms(roomListingsDTOs);
+        roomsOwnedByUserResponseEntity.setTotalPages(roomsPage.getTotalPages());
+        roomsOwnedByUserResponseEntity.setTotalRecords(roomsPage.getTotalElements());
+        // }
+
+        return new OkResponse<RoomsOwnedByUserResponseEntity>(
+                roomsOwnedByUserResponseEntity)
+                .response();
+
     }
 
     @GetMapping("/api/rooms/average-price")
-    public ResponseEntity<StandardJSONResponse<Double>> getAverageRoomPricePerNight(
-            @RequestParam(value = "type", defaultValue = "PER_NIGHT") String priceType) {
-        double avgRoomPricePerNight = 0;
-        long totalRecords = 0;
+    public ResponseEntity<StandardJSONResponse<Double>> getAverageRoomPrice() {
 
-        // if (priceType.equals(PriceType.PER_NIGHT.name())) {
-        //     List<RoomPricePerCurrencyDTO> roomPricePerCurrencies = roomService
-        //             .findAverageRoomPriceByPriceType(PriceType.PER_NIGHT);
+        // List<RoomPricePerCurrencyDTO> roomPricePerCurrencies = roomService
+        // .findAverageRoomPriceByPriceType(PriceType.PER_NIGHT);
 
-        //     for (RoomPricePerCurrencyDTO price : roomPricePerCurrencies) {
-        //         if (price.getUnit().equals("USD"))
-        //             avgRoomPricePerNight += price.getTotalPricePerNight() * 23000;
-        //         else
-        //             avgRoomPricePerNight += price.getTotalPricePerNight();
+        // for (RoomPricePerCurrencyDTO price : roomPricePerCurrencies) {
+        // if (price.getUnit().equals("USD"))
+        // avgRoomPricePerNight += price.getTotalPricePerNight() * 23000;
+        // else
+        // avgRoomPricePerNight += price.getTotalPricePerNight();
 
-        //         totalRecords += price.getTotalRecords();
-        //     }
-        // } else {
-            // List<RoomPricePerCurrencyDTO> roomPricePerCurrencies = roomService
-            // .findAverageRoomPriceByPriceType(priceType);
-            // double averageRoomPricePerNight = 0;
-            // long totalRecords = 0;
-            // for (RoomPricePerCurrencyDTO rp : roomPricePerCurrencies) {
-            // if (rp.getUnit().equals("USD"))
-            // averageRoomPricePerNight += rp.getTotalPricePerNight() * 23000;
-            // else
-            // averageRoomPricePerNight += rp.getTotalPricePerNight();
+        // totalRecords += price.getTotalRecords();
 
-            // totalRecords += rp.getTotalRecords();
-            // }
-        // }
-
-        return new OkResponse<Double>(avgRoomPricePerNight / totalRecords).response();
+        return new OkResponse<Double>(roomService.getAverageRoomPrice()).response();
     }
 }

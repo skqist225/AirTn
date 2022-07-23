@@ -40,7 +40,6 @@ import com.airtnt.airtntapp.amenity.dto.AmenityRoomDetailsDTO;
 import com.airtnt.airtntapp.city.CityRepository;
 import com.airtnt.airtntapp.exception.RoomNotFoundException;
 import com.airtnt.airtntapp.privacy.PrivacyTypeRepository;
-import com.airtnt.airtntapp.room.dto.RoomPricePerCurrencyDTO;
 import com.airtnt.airtntapp.state.StateRepository;
 import com.airtnt.airtntapp.user.UserRepository;
 import com.airtnt.entity.Amentity;
@@ -557,9 +556,9 @@ public class RoomService {
 		return result;
 	}
 
-	// public List<RoomPricePerCurrencyDTO> findAverageRoomPriceByPriceType(PriceType type) {
-	// 	return roomRepository.findAverageRoomPriceByPriceType(type);
-	// }
+	public double getAverageRoomPrice() {
+		return roomRepository.getAverageRoomPrice();
+	}
 
 	public List<Integer> getRoomIdByHost(User host) {
 		return roomRepository.getRoomIdByHost(host);

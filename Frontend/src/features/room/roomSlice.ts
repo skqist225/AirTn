@@ -162,9 +162,9 @@ export const fetchRoomGroups = createAsyncThunk(
 
 export const findAverageRoomPriceByType = createAsyncThunk(
     "room/findAverageRoomPriceByType",
-    async (type: string = "PER_NIGHT", { dispatch, getState, rejectWithValue }) => {
+    async (_, { dispatch, getState, rejectWithValue }) => {
         try {
-            const { data } = await api.get(`/rooms/average-price?type=${type}`);
+            const { data } = await api.get(`/rooms/average-price`);
 
             return { data };
         } catch (error) {}

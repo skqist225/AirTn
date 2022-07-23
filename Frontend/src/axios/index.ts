@@ -1,17 +1,9 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 
 export enum DataType {
     MULTIPARTFORMDATA = "multipart/form-data",
     APPLICATIONJSON = "application/json",
 }
-
-//  `${
-//         process.env.REACT_APP_NODE_ENV === "development"
-//             ? process.env.REACT_APP_LOCAL_SERVER_URL
-//             : process.env.REACT_APP_REMOTE_SERVER_URL
-//     }/api`
-
-// REACT_APP_REMOTE_SERVER_URL = "https://airj18.skqist225.xyz/api";
 
 const api = axios.create({
     baseURL: `${
@@ -25,8 +17,13 @@ const api = axios.create({
     withCredentials: true,
 });
 
-api.interceptors.request.use(req => {
-    return req;
+api.interceptors.request.use(request  => {
+    const token = localStorage.getItem("authtoken");
+    if (token) {
+        (request as any).headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return request;
 });
 
 api.interceptors.response.use(

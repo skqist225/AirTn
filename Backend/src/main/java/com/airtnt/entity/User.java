@@ -87,7 +87,6 @@ public class User extends BaseEntity {
 	private String password;
 
 	@ManyToOne
-	@OneToOne
 	@JoinColumn(name = "role_id")
 	private Role role;
 
@@ -118,7 +117,7 @@ public class User extends BaseEntity {
 
 	@Builder.Default
 	@JsonIgnore
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "users_favorite_rooms", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "room_id"))
 	private Set<Room> favRooms = new HashSet<>();
 

@@ -92,8 +92,7 @@ public class RoomDetailsDTO {
                                 .longitude(room.getLongitude())
                                 .latitude(room.getLatitude())
                                 .averageRating(avgRatings)
-                                .bookedDates(
-                                                bookedDates)
+                                .bookedDates(bookedDates)
                                 .address(room.getAddress())
                                 .category(room.getCategory().getName())
                                 .isLikedByCurrentUser(room.getHost().getFavRooms().contains(room))

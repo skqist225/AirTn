@@ -42,7 +42,7 @@ const HomePage: FC<HomeProps> = () => {
         dispatch(fetchCategories());
         dispatch(fetchRoomPrivacies());
         dispatch(fetchAmenities());
-        dispatch(findAverageRoomPriceByType('PER_NIGHT'));
+        dispatch(findAverageRoomPriceByType());
     }, []);
 
     useEffect(() => {
