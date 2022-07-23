@@ -21,12 +21,10 @@ public class BookingDTO {
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDateTime bookingDate;
     private String currencySymbol;
-    private float totalFee;
     private long lastUpdated;
-    private String userToken;
 
     public static BookingDTO buildBookingDTO(Booking booking) {
         return new BookingDTO(booking.getId(), booking.getBookingDate(),
-                booking.getRoom().getCurrency().getSymbol(), booking.getTotalFee(), 0, booking.getUserToken());
+                booking.getRoom().getCurrency().getSymbol(), 0);
     }
 }

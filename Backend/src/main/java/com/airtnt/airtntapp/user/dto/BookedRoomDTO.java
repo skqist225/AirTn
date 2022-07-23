@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 import com.airtnt.entity.Booking;
-import com.airtnt.entity.PriceType;
 import com.airtnt.entity.SubRating;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.auto.value.AutoValue.Builder;
@@ -32,7 +31,7 @@ public class BookedRoomDTO {
     private Date checkoutDate;
 
     private float pricePerDay;
-    private int numberOfDays;
+    private long numberOfDays;
     private float siteFee;
     private boolean isComplete;
     private boolean isRefund;
@@ -45,16 +44,14 @@ public class BookedRoomDTO {
     private String currency;
     private String privacyType;
     private String roomCategory;
-    private PriceType priceType;
 
     private String bookingReview;
     private SubRating reviewRating;
 
     public static BookedRoomDTO buildBookedRoomDTO(Booking b) {
-        String roomThumbnail = "/room_images/" + b.getRoom().getHost().getEmail() + "/" + b.getRoom().getId() + "/"
-                + b.getRoom().getThumbnail();
-        String userFullName = b.getRoom().getHost().getFirstName() + " " + b.getRoom().getHost().getLastName();
-        String userAvatar = "/user_images/" + b.getRoom().getHost().getId() + "/" + b.getRoom().getHost().getAvatar();
+        String roomThumbnail = b.getRoom().renderThumbnailImage();
+        String userFullName = b.getRoom().getHost().getFullName();
+        String userAvatar = b.getRoom().getHost().getAvatarPath();
         String bookingReview = null;
         SubRating reviewRating = null;
 
@@ -68,7 +65,7 @@ public class BookedRoomDTO {
                 b.getSiteFee(), b.isComplete(), b.isRefund(), b.getRoom().getId(), roomThumbnail, b.getRoom().getName(),
                 userFullName,
                 userAvatar, b.getRoom().getCurrency().getSymbol(), b.getRoom().getPrivacyType().getName(),
-                b.getRoom().getCategory().getName(), b.getRoom().getPriceType(),
+                b.getRoom().getCategory().getName(),
                 bookingReview, reviewRating);
     }
 }

@@ -279,21 +279,16 @@ public class BookingRestController {
 					.checkin(checkinRating).accuracy(accuracyRating).location(locationRating).value(valueRating)
 					.build();
 
-			float sum = 0;
-			sum = cleanlinessRating + contactRating + checkinRating + accuracyRating + locationRating + valueRating;
-			sum /= 6;
-
 			Booking booking = bookingService.getBookingById(bookingId);
 			if (booking.getReview() != null) {
 				Review review = booking.getReview();
 				review.setSubRating(subRating);
-				review.setFinalRating(sum);
 				review.setComment(createReviewDTO.getRatingComment());
 
 				reviewService.updateReview(review);
 			} else {
 				Review review = Review.builder().comment(createReviewDTO.getRatingComment()).subRating(subRating)
-						.finalRating(sum).booking(new Booking(bookingId)).build();
+						.booking(new Booking(bookingId)).build();
 
 				reviewService.createReview(review);
 			}

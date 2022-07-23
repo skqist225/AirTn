@@ -7,7 +7,7 @@ import java.util.Set;
 import com.airtnt.airtntapp.amenity.dto.AmenityRoomDetailsDTO;
 import com.airtnt.airtntapp.booking.BookedDateDTO;
 import com.airtnt.airtntapp.review.dto.ReviewDTO;
-import com.airtnt.entity.PriceType;
+import com.airtnt.entity.Address;
 import com.airtnt.entity.Room;
 import com.airtnt.entity.Rule;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -56,9 +56,7 @@ public class RoomDetailsDTO {
         private String groupName;
         private Integer categoryId;
         private Integer privacyId;
-        private String stateName;
-        private String countryName;
-        private String streetName;
+        private Address address;
 
         @Transient
         @JsonIgnore
@@ -66,6 +64,12 @@ public class RoomDetailsDTO {
                         List<AmenityRoomDetailsDTO> amenityRoomDetailsDTOs, HostDTO hostDTO,
                         List<BookedDateDTO> bookedDates,
                         float avgRatings) {
+                Address address = room.getAddress();
+                String location = address.getCountry().getName();
+                location += " " + address.getState().getName();
+                location += " " + address.getCity().getName();
+                location += " " + address.getStreet();
+                
                 return RoomDetailsDTO.builder()
                                 .thumbnail(room.renderThumbnailImage())
                                 .amenities(
@@ -76,9 +80,7 @@ public class RoomDetailsDTO {
                                 .id(room.getId())
                                 .name(room.getName())
                                 .description(room.getDescription())
-                                .location(room.getStreet() + " " + room.getCity().getName() + " "
-                                                + room.getState().getName() + " "
-                                                + room.getCountry().getName())
+                                .location(location)
                                 .privacy(room.getPrivacyType().getName()).guest(room.getAccomodatesCount())
                                 .host(hostDTO)
                                 .bed(room.getBedCount())
@@ -87,24 +89,18 @@ public class RoomDetailsDTO {
                                 .price(room.getPrice())
                                 .currencySymbol(room.getCurrency().getSymbol())
                                 .currencyUnit(room.getCurrency().getUnit())
-                                .stayType(room.getPriceType() == (PriceType.PER_NIGHT) ? "đêm" : "tuần")
                                 .longitude(room.getLongitude())
                                 .latitude(room.getLatitude())
                                 .averageRating(avgRatings)
                                 .bookedDates(
                                                 bookedDates)
-                                .cityName(room.getCity().getName())
+                                .address(room.getAddress())
                                 .category(room.getCategory().getName())
                                 .isLikedByCurrentUser(room.getHost().getFavRooms().contains(room))
                                 .status(room.isStatus())
                                 .accomodates(room.getAccomodatesCount())
-                                .groupId(room.getRoomGroup().getId())
                                 .categoryId(room.getCategory().getId())
                                 .privacyId(room.getPrivacyType().getId())
-                                .stateName(room.getState().getName())
-                                .countryName(room.getCountry().getName())
-                                .streetName(room.getStreet())
-                                .groupName(room.getRoomGroup().getName())
                                 .build();
         }
 }

@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -37,7 +36,6 @@ import com.airtnt.entity.User;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.hibernate.query.criteria.internal.expression.ConcatExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -112,13 +110,10 @@ public class BookingService {
         Float cleanFee = room.getPrice() * 5 / 100;
         Float siteFee = room.getPrice() * 10 / 100;
 
-        Booking booking = Booking.builder().checkinDate(checkinDate).checkoutDate(checkoutDate)
-                .pricePerDay(room.getPrice()).numberOfDays(numberOfDays).siteFee(siteFee).room(room).customer(customer)
+        Booking booking = Booking.builder().checkinDate(checkinDate).checkoutDate(checkoutDate).siteFee(siteFee).room(room).customer(customer)
                 .bookingDate(LocalDateTime.now()).cleanFee(cleanFee)
-                .totalFee(room.getPrice() * numberOfDays + siteFee + cleanFee)
                 .clientMessage(
                         clientMessage)
-                .userToken(userToken)
                 .isComplete(false).build();
 
         Booking savedBooking = bookingRepository.save(booking);
@@ -431,7 +426,7 @@ public class BookingService {
         canceledBooking.setCancelDate(cancelDate);
         canceledBooking.setRefund(true);
         canceledBooking.setComplete(false);
-        canceledBooking.setRefundPaid(canceledBooking.getTotalFee());
+        // canceledBooking.setRefundPaid(canceledBooking.getTotalFee());
 
         return bookingRepository.save(canceledBooking);
     }
@@ -464,12 +459,12 @@ public class BookingService {
                     listOfDates.size() / 2)).atStartOfDay();
 
             if (cancelDate.isBefore(dateBetweenBookingDateAndCheckinDate)) {
-                canceledBooking.setRefundPaid(canceledBooking.getTotalFee());
+                // canceledBooking.setRefundPaid(canceledBooking.getTotalFee());
             } else {
-                canceledBooking.setRefundPaid(canceledBooking.getTotalFee() / 2);
+                // canceledBooking.setRefundPaid(canceledBooking.getTotalFee() / 2);
             }
         } else {
-            canceledBooking.setRefundPaid(canceledBooking.getTotalFee());
+            // canceledBooking.setRefundPaid(canceledBooking.getTotalFee());
         }
 
         // If canceled date is after the date between booking date and checkin date
@@ -493,7 +488,6 @@ public class BookingService {
             }
 
             approvedBooking.setComplete(true);
-            approvedBooking.setUserToken(null);
 
             return bookingRepository.save(approvedBooking);
         } catch (BookingNotFoundException e) {
@@ -527,9 +521,9 @@ public class BookingService {
         return bookingRepository.getNumberOfBooking();
     }
 
-    public Integer getTotalRevenue() {
-        return bookingRepository.getTotalRevenue();
-    }
+    // public Integer getTotalRevenue() {
+    //     return bookingRepository.getTotalRevenue();
+    // }
 
     public Integer getNumberOfBookingInLastMonth() {
         return bookingRepository.getNumberOfBookingInLastMonth();
@@ -539,13 +533,13 @@ public class BookingService {
         return bookingRepository.getTotalRevenueOfBookingInLastMonth();
     }
 
-    public Integer getRevenueInSpecificMonthYear(Integer month, Integer year) {
-        return bookingRepository.getRevenueInSpecificMonthYear(month, year);
-    }
+    // public Integer getRevenueInSpecificMonthYear(Integer month, Integer year) {
+    //     return bookingRepository.getRevenueInSpecificMonthYear(month, year);
+    // }
 
-    public Integer getRevenueInSpecificYear(Integer year) {
-        return bookingRepository.getRevenueInSpecificYear(year);
-    }
+    // public Integer getRevenueInSpecificYear(Integer year) {
+    //     return bookingRepository.getRevenueInSpecificYear(year);
+    // }
 
     public Integer getNumberOfBookingComplete() {
         return bookingRepository.getNumberOfBookingComplete();

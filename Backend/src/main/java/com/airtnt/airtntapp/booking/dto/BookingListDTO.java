@@ -48,7 +48,7 @@ public class BookingListDTO implements Serializable {
     private Date checkoutDate;
 
     private float pricePerDay;
-    private int numberOfDays;
+    private long numberOfDays;
     private float siteFee;
     private float refundPaid;
 
@@ -66,7 +66,7 @@ public class BookingListDTO implements Serializable {
                 b.isComplete(), b.isRefund(),
                 b.getBookingDate(), b.getCancelDate(), b.getCheckinDate(),
                 b.getCheckoutDate(),
-                b.getPricePerDay(), b.getNumberOfDays(), b.getSiteFee(), b.getRefundPaid(),
+                b.getRoom().getPrice(), b.getNumberOfDays(), b.getSiteFee(), b.getRefundPaid(),
                 customer.getFullName(),
                 customer.getAvatarPath());
     }

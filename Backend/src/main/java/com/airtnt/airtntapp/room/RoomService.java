@@ -49,11 +49,9 @@ import com.airtnt.entity.City;
 import com.airtnt.entity.Country;
 import com.airtnt.entity.Image;
 import com.airtnt.entity.Room;
-import com.airtnt.entity.RoomGroup;
 import com.airtnt.entity.RoomPrivacy;
 import com.airtnt.entity.State;
 import com.airtnt.entity.User;
-import com.airtnt.entity.PriceType;
 
 @Service
 @Transactional
@@ -291,7 +289,7 @@ public class RoomService {
 				break;
 			}
 			case "groupAndTypeAndPrivacy": {
-				room.setRoomGroup(new RoomGroup(Integer.parseInt(values.get("roomGroup"))));
+				// room.setRoomGroup(new RoomGroup(Integer.parseInt(values.get("roomGroup"))));
 				room.setCategory(new Category(Integer.parseInt(values.get("category"))));
 				room.setPrivacyType(new RoomPrivacy(Integer.parseInt(values.get("roomPrivacy"))));
 				break;
@@ -316,10 +314,10 @@ public class RoomService {
 				System.out.println(values.get("state"));
 				System.out.println(values.get("street"));
 
-				room.setCountry(country);
-				room.setState(state2);
-				room.setCity(city2);
-				room.setStreet(values.get("street"));
+				// room.setCountry(country);
+				// room.setState(state2);
+				// room.setCity(city2);
+				// room.setStreet(values.get("street"));
 				break;
 			}
 			case "status": {
@@ -559,9 +557,9 @@ public class RoomService {
 		return result;
 	}
 
-	public List<RoomPricePerCurrencyDTO> findAverageRoomPriceByPriceType(PriceType type) {
-		return roomRepository.findAverageRoomPriceByPriceType(type);
-	}
+	// public List<RoomPricePerCurrencyDTO> findAverageRoomPriceByPriceType(PriceType type) {
+	// 	return roomRepository.findAverageRoomPriceByPriceType(type);
+	// }
 
 	public List<Integer> getRoomIdByHost(User host) {
 		return roomRepository.getRoomIdByHost(host);

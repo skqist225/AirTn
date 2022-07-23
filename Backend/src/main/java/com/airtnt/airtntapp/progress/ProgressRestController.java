@@ -76,18 +76,20 @@ public class ProgressRestController {
             Map<Integer, Integer> numberOfBookingsInMonth = new HashMap<>();
             List<BookingDTO> bookingsDTO = new ArrayList<>();
             for (Booking b : bookings) {
+                totalFee = b.getTotalFee();
+
                 BookingDTO bookingDTO = BookingDTO.builder()
                         .id(b.getId())
                         .bookingDate(b.getBookingDate())
                         .currencySymbol(b.getRoom().getCurrency().getSymbol())
-                        .totalFee(b.getRoom().getPrice() * b.getNumberOfDays() + b.getSiteFee() + b.getCleanFee())
                         .lastUpdated(b.getLastUpdated())
                         .build();
                 bookingsDTO.add(bookingDTO);
-                if (b.getRoom().getCurrency().getSymbol().equals("$"))
-                    totalFee += b.getTotalFee() * 22705;
-                else
-                    totalFee += b.getTotalFee();
+                if (b.getRoom().getCurrency().getSymbol().equals("$")) {
+                    totalFee += totalFee * 22705;
+                } else {
+                    totalFee += totalFee;
+                }
 
                 Integer monthValue = b.getBookingDate().getMonthValue();
 
@@ -140,8 +142,9 @@ public class ProgressRestController {
             float finalRatings = 0;
             List<Review> reviews = reviewService.getReviewsByBookings(bookingIds, Float.parseFloat(numberOfStars));
 
-            if (reviews.size() == 0)
+            if (reviews.isEmpty()) {
                 finalRatings = 0;
+            }
             else {
                 for (Review r : reviews)
                     finalRatings += r.getFinalRating();

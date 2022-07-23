@@ -1,5 +1,7 @@
 package com.airtnt.entity;
 
+import java.beans.Transient;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
@@ -35,4 +37,9 @@ public class SubRating {
 	@Column(name = "value_rating", columnDefinition = "TINYINT default 0, check(value_rating >= 0 and value_rating <= 5)")
 	private int value;
 
+	@Transient
+	public float getFinalRating() {
+		return (float) (this.cleanliness + this.contact + this.checkin + this.accuracy + this.location + this.value)
+				/ 6;
+	}
 }

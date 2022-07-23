@@ -3,8 +3,7 @@ package com.airtnt.airtntapp.room.dto.page.listings;
 import java.io.Serializable;
 import java.util.Date;
 import com.airtnt.entity.Room;
-
-import com.airtnt.entity.PriceType;
+import com.airtnt.entity.Address;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -25,7 +24,6 @@ public class RoomListingsDTO implements Serializable {
     private String thumbnail;
     private String currency;
     private String category;
-    private PriceType priceType;
     private String location;
     private float price;
     private int bedroomCount;
@@ -38,23 +36,27 @@ public class RoomListingsDTO implements Serializable {
     private Date updatedDate;
 
     @JsonIgnore
-    public static RoomListingsDTO buildRoomListingsDTO(Room r) {
+    public static RoomListingsDTO buildRoomListingsDTO(Room room) {
+        Address address = room.getAddress();
+        String location = address.getCountry().getName();
+        location += " " + address.getState().getName();
+        location += " " + address.getCity().getName();
+        location += " " + address.getStreet();
+
         return RoomListingsDTO.builder()
-                .id(r.getId())
-                .name(r.getName())
-                .thumbnail(r.renderThumbnailImage())
-                .currency(r.getCurrency().getSymbol())
-                .category(r.getCategory().getName())
-                .price(r.getPrice())
-                .priceType(r.getPriceType())
-                .bedCount(r.getBedCount())
-                .bedroomCount(r.getBedroomCount())
-                .bathroomCount(r.getBathroomCount())
-                .status(r.isStatus())
-                .createdDate(r.getCreatedDate())
-                .updatedDate(r.getUpdatedDate())
-                .location(r.getStreet() + " " + r.getCity().getName() + " " + r.getState().getName() + " "
-                        + r.getCountry().getName())
+                .id(room.getId())
+                .name(room.getName())
+                .thumbnail(room.renderThumbnailImage())
+                .currency(room.getCurrency().getSymbol())
+                .category(room.getCategory().getName())
+                .price(room.getPrice())
+                .bedCount(room.getBedCount())
+                .bedroomCount(room.getBedroomCount())
+                .bathroomCount(room.getBathroomCount())
+                .status(room.isStatus())
+                .createdDate(room.getCreatedDate())
+                .updatedDate(room.getUpdatedDate())
+                .location(location)
                 .build();
     }
 }

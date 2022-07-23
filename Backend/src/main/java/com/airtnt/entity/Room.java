@@ -11,7 +11,6 @@ import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -22,29 +21,26 @@ import java.util.*;
 @Entity
 @NoArgsConstructor
 @Table(name = "rooms")
-public class Room extends BaseEntity implements Serializable {
+public class Room extends BaseEntity {
 
 	@Builder
 	public Room(
 			Integer id, String name, Set<Image> images, String thumbnail, byte rating,
-			Country country, State state, City city, String street, int bedroomCount, int bathroomCount,
-			int accomodatesCount, int bedCount, RoomGroup roomGroup, Currency currency,
+			Address address, int bedroomCount, int bathroomCount,
+			int accomodatesCount, int bedCount, Currency currency,
 			Category category, String description, Set<Amentity> amentities, float latitude, float longitude,
-			float price, RoomPrivacy privacyType, PriceType priceType, User host,
+			float price, RoomPrivacy privacyType, User host,
 			Set<Rule> rules, boolean status) {
 		super(status);
 		this.name = name;
 		this.images = images;
 		this.thumbnail = thumbnail;
 		this.rating = rating;
-		this.country = country;
-		this.state = state;
-		this.city = city;
+		this.address = address;
 		this.bedroomCount = bedroomCount;
 		this.bathroomCount = bathroomCount;
 		this.accomodatesCount = accomodatesCount;
 		this.bedCount = bedCount;
-		this.roomGroup = roomGroup;
 		this.currency = currency;
 		this.category = category;
 		this.description = description;
@@ -53,10 +49,8 @@ public class Room extends BaseEntity implements Serializable {
 		this.longitude = longitude;
 		this.price = price;
 		this.privacyType = privacyType;
-		this.priceType = priceType;
 		this.host = host;
 		this.rules = rules;
-		this.street = street;
 	}
 
 	public Room(int id) {
@@ -70,24 +64,14 @@ public class Room extends BaseEntity implements Serializable {
 	@JoinColumn(name = "room_id")
 	private Set<Image> images = new HashSet<>();
 
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "address_id")
+	private Address address;
+
 	private String thumbnail;
 
 	@Column(columnDefinition = "smallint")
 	private byte rating;
-
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "country_id")
-	private Country country;
-
-	@ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-	@JoinColumn(name = "state_id")
-	private State state;
-
-	@ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-	@JoinColumn(name = "city_id")
-	private City city;
-
-	private String street;
 
 	@Column(nullable = false, columnDefinition = "SMALLINT DEFAULT 0")
 	private int bedroomCount;
@@ -100,10 +84,6 @@ public class Room extends BaseEntity implements Serializable {
 
 	@Column(nullable = false, columnDefinition = "SMALLINT DEFAULT 0")
 	private int bedCount;
-
-	@ManyToOne
-	@JoinColumn(name = "room_group_id")
-	private RoomGroup roomGroup;
 
 	@OneToOne
 	@JoinColumn(name = "currency_id")
@@ -133,10 +113,6 @@ public class Room extends BaseEntity implements Serializable {
 	@JoinColumn(name = "room_privacy_id")
 	private RoomPrivacy privacyType;
 
-	@Enumerated(EnumType.STRING)
-	@Column(length = 20, nullable = false)
-	private PriceType priceType;
-
 	@JsonBackReference
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "host_id")
@@ -150,38 +126,27 @@ public class Room extends BaseEntity implements Serializable {
 	@JoinTable(name = "rooms_rules", joinColumns = @JoinColumn(name = "room_id"), inverseJoinColumns = @JoinColumn(name = "rule_id"))
 	private Set<Rule> rules = new HashSet<>();
 
-	@Override
-	public String toString() {
-		return "Room [name=" + name + ", images=" + images + ", rating=" + rating
-				+ ", country=" + country + ", state=" + state + ", city=" + city + ", bedRoomCount=" + bedroomCount
-				+ ", bathRoomCount=" + bathroomCount + ", accomodatesCount=" + accomodatesCount + ", bedCount="
-				+ bedCount + ", category=" + category + ", description=" + description + ", amentities=" + amentities
-				+ ", latitude=" + latitude + ", longtitude=" + longitude + ", price=" + price + ", priceType="
-				+ priceType + ", host=" + host + ", rules="
-				+ rules + "]";
-	}
-
 	@Transient
 	public String renderThumbnailImage() {
-		if (this.host.getEmail().equals("test@gmail.com"))
+		if (this.host.getEmail().equals("test@gmail.com")) {
 			return "/room_images/" + this.host.getEmail() + "/" + this.thumbnail;
-		else
+		}
+		else {
 			return "/room_images/" + this.host.getEmail() + "/" + this.getId() + "/" + this.thumbnail;
+		}
 	}
 
 	@Transient
-	public static Room buildRoom(PostAddRoomDTO payload, Set<Image> images, Set<Amentity> amenities, PriceType pt,
-			City city, State state, Country country, Set<Rule> rules, boolean status) {
+	public static Room buildRoom(PostAddRoomDTO payload, Set<Image> images, Set<Amentity> amenities,
+			Address address, Set<Rule> rules, boolean status) {
 		return Room.builder().name(payload.getName()).accomodatesCount(payload.getAccomodatesCount())
 				.bathroomCount(payload.getBathroomCount()).bedCount(payload.getBedCount())
 				.bedroomCount(payload.getBedroomCount()).description(payload.getDescription()).amentities(amenities)
 				.images(images).latitude(payload.getLatitude()).longitude(payload.getLongitude())
-				.price(payload.getPrice()).priceType(pt).city(city)
-				.state(state).country(country).rules(rules).host(new User(payload.getHost()))
-				.roomGroup(new RoomGroup(payload.getRoomGroup())).priceType(PriceType.PER_NIGHT)
+				.price(payload.getPrice()).rules(rules).host(new User(payload.getHost()))
 				.host(new User(payload.getHost())).category(new Category(payload.getCategory()))
 				.currency(new Currency(payload.getCurrency())).privacyType(new RoomPrivacy(payload.getPrivacyType()))
-				.thumbnail(images.iterator().next().getImage()).street(payload.getStreet()).status(status).build();
+				.thumbnail(images.iterator().next().getImage()).status(status).build();
 	}
 
 	@Transient
@@ -197,9 +162,6 @@ public class Room extends BaseEntity implements Serializable {
 		LocalDate dateBefore = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
 		LocalDate currentdate = LocalDate.now();
 		LocalDate dateAfter = LocalDate.of(currentdate.getYear(), currentdate.getMonth(), currentdate.getDayOfMonth());
-		long noOfDaysBetween = ChronoUnit.DAYS.between(dateBefore, dateAfter);
-
-		return noOfDaysBetween;
+		return ChronoUnit.DAYS.between(dateBefore, dateAfter);
 	}
-
 }

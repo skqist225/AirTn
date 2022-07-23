@@ -1,6 +1,11 @@
 package com.airtnt.entity;
 
+import java.text.ParseException;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,12 +46,6 @@ public class Booking extends BaseEntity {
 	@JsonFormat(pattern = "dd-MM-yyyy")
 	private LocalDateTime cancelDate;
 
-	@Column(columnDefinition = "Decimal(20,2)", nullable = false)
-	private float pricePerDay;
-
-	@Column(columnDefinition = "SMALLINT default 0")
-	private int numberOfDays;
-
 	@Builder.Default
 	@Column(columnDefinition = "boolean default false")
 	private boolean isRefund = false;
@@ -59,9 +58,6 @@ public class Booking extends BaseEntity {
 
 	@Column(columnDefinition = "Decimal(20,2)", nullable = false)
 	private float cleanFee;
-
-	@Column(columnDefinition = "Decimal(20,2) default '0.00'")
-	private float totalFee;
 
 	private boolean isComplete; // 3 state: pending success cancelled
 
@@ -77,10 +73,27 @@ public class Booking extends BaseEntity {
 	private Review review;
 
 	private String clientMessage;
-	private String userToken;
 
 	@Transient
 	long lastUpdated;
+
+	@Transient
+	public long getNumberOfDays() {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		LocalDate startDate = LocalDate.parse(this.checkinDate.toString(), dtf);
+		LocalDate endDate = LocalDate.parse(this.checkoutDate.toString(), dtf);
+
+		return ChronoUnit.DAYS.between(startDate, endDate);
+	}
+
+	@Transient
+	public float getPricePerDay() {
+		return this.getRoom().getPrice();
+	}
+
+	public float getTotalFee() {
+		return  this.getPricePerDay() * this.getNumberOfDays() + this.getSiteFee() + this.getCleanFee();
+	}
 
 	public Booking(Integer bookingId) {
 		super(bookingId);

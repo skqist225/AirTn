@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -36,6 +37,8 @@ public class Review extends BaseEntity {
 	@Embedded
 	private SubRating subRating;
 
-	@Column(columnDefinition = "TINYINT default 0, check(final_rating >= 0 and final_rating <= 5)")
-	private float finalRating;
+	@Transient
+	public float getFinalRating() {
+		return this.subRating.getFinalRating();
+	}
 }

@@ -39,7 +39,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer>, JpaS
         @Query("SELECT b FROM Booking b WHERE b.room.id IN (:roomIds)")
         public List<Booking> getBookingsByRooms(Integer[] roomIds);
 
-        @Query("SELECT b FROM Booking b WHERE b.room.id IN (:roomIds) AND b.room.name LIKE %:query% AND b.bookingDate <= :bookingDate AND b.bookingDate >= :bookingDate2 AND b.totalFee >= :totalFee AND b.isComplete IN (:isCompleteLst) AND b.isRefund IN (:isCancelledLst)")
+        @Query("SELECT b FROM Booking b WHERE b.room.id IN (:roomIds) AND b.room.name LIKE %:query% AND b.bookingDate <= :bookingDate AND b.bookingDate >= :bookingDate2 AND b.getTotalFee() >= :totalFee AND b.isComplete IN (:isCompleteLst) AND b.isRefund IN (:isCancelledLst)")
         public Page<Booking> getBookingsByRooms(Integer[] roomIds, String query, List<Boolean> isCompleteLst,
                         List<Boolean> isCancelledLst, LocalDateTime bookingDate, LocalDateTime bookingDate2,
                         Float totalFee,
@@ -47,7 +47,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer>, JpaS
 
         @Query("SELECT b FROM Booking b"
                         + " WHERE b.room.id IN (:roomIds) AND b.room.name LIKE %:query% AND b.bookingDate <= :bookingDate"
-                        + " AND b.bookingDate >= :bookingDate2 AND b.totalFee >= :totalFee"
+                        + " AND b.bookingDate >= :bookingDate2 AND b.getTotalFee() >= :totalFee"
                         + " AND b.isRefund = true AND b.isComplete = false OR b.isRefund = false AND b.isComplete = true"
                         + " ORDER BY b.bookingDate DESC")
         public Page<Booking> getBookingListByRooms(List<Integer> roomIds, String query,
@@ -94,8 +94,8 @@ public interface BookingRepository extends JpaRepository<Booking, Integer>, JpaS
         @Query("SELECT count(*) FROM Booking b WHERE b.isComplete=false AND b.isRefund=true")
         public Integer getNumberOfBookingRefund();
 
-        @Query("SELECT sum(totalFee) FROM Booking b WHERE b.isComplete=true AND b.isRefund=false")
-        public Integer getTotalRevenue();
+        // @Query("SELECT sum(totalFee) FROM Booking b WHERE b.isComplete=true AND b.isRefund=false")
+        // public Integer getTotalRevenue();
 
         @Query(value = "SELECT count(*) FROM bookings b WHERE YEAR(b.booking_date) = YEAR(CURRENT_DATE - INTERVAL 1 MONTH) AND MONTH(b.booking_date) = MONTH(CURRENT_DATE - INTERVAL 1 MONTH)", nativeQuery = true)
         public Integer getNumberOfBookingInLastMonth();
@@ -103,11 +103,11 @@ public interface BookingRepository extends JpaRepository<Booking, Integer>, JpaS
         @Query(value = "SELECT sum(total_fee) FROM bookings b WHERE YEAR(b.booking_date) = YEAR(CURRENT_DATE - INTERVAL 1 MONTH) AND MONTH(b.booking_date) = MONTH(CURRENT_DATE - INTERVAL 1 MONTH) AND b.is_complete=true AND b.is_refund=false", nativeQuery = true)
         public Integer getTotalRevenueOfBookingInLastMonth();
 
-        @Query("SELECT sum(totalFee) FROM Booking b WHERE YEAR(b.bookingDate) = :year and MONTH(b.bookingDate) = :month AND b.isComplete=true AND b.isRefund=false")
-        public Integer getRevenueInSpecificMonthYear(Integer month, Integer year);
+        // @Query("SELECT sum(totalFee) FROM Booking b WHERE YEAR(b.bookingDate) = :year and MONTH(b.bookingDate) = :month AND b.isComplete=true AND b.isRefund=false")
+        // public Integer getRevenueInSpecificMonthYear(Integer month, Integer year);
 
-        @Query("SELECT sum(totalFee) FROM Booking b WHERE YEAR(b.bookingDate) = :year AND b.isComplete=true AND b.isRefund=false")
-        public Integer getRevenueInSpecificYear(Integer year);
+        // @Query("SELECT sum(totalFee) FROM Booking b WHERE YEAR(b.bookingDate) = :year AND b.isComplete=true AND b.isRefund=false")
+        // public Integer getRevenueInSpecificYear(Integer year);
 
         @Query(value = "SELECT b.booking_date as date, SUM(b.total_fee) as revenue FROM bookings b WHERE YEAR(b.booking_date) = :year AND MONTH(b.booking_date) = :month AND b.is_complete=true AND b.is_refund=false group by YEAR(b.booking_date), Month(b.booking_date), Day(b.booking_date) order by b.booking_date", nativeQuery = true)
         public List<BookingStatsPerDayDTO> getBookingStatsPerDay(Integer month, Integer year);

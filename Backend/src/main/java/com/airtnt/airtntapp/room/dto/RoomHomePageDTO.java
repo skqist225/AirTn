@@ -3,7 +3,6 @@ package com.airtnt.airtntapp.room.dto;
 import java.beans.Transient;
 import java.util.List;
 
-import com.airtnt.entity.PriceType;
 import com.airtnt.entity.Room;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -37,7 +36,6 @@ public class RoomHomePageDTO {
                 .images(images)
                 .price(room.getPrice())
                 .currencySymbol(room.getCurrency().getSymbol())
-                .stayType(room.getPriceType() == (PriceType.PER_NIGHT) ? "đêm" : "tuần")
                 .likedByUsers(likedByUsers)
                 .id(room.getId())
                 .build();

@@ -12,10 +12,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Date;
 import java.util.List;
 
-import com.airtnt.airtntapp.room.dto.RoomPricePerCurrencyDTO;
 import com.airtnt.entity.Room;
 import com.airtnt.entity.User;
-import com.airtnt.entity.PriceType;
 
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Integer>, JpaSpecificationExecutor<Room> {
@@ -98,7 +96,4 @@ public interface RoomRepository extends JpaRepository<Room, Integer>, JpaSpecifi
 
         @Query("SELECT count(*) From Room r")
         public Integer getNumberOfRoom();
-
-        @Query("SELECT new com.airtnt.airtntapp.room.dto.RoomPricePerCurrencyDTO(SUM(r.price), r.currency.unit, COUNT(r.price)) FROM Room r WHERE r.priceType = :priceType GROUP BY r.currency.unit")
-        public List<RoomPricePerCurrencyDTO> findAverageRoomPriceByPriceType(PriceType priceType);
 }

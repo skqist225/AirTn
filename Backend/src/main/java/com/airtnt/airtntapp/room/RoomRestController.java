@@ -49,12 +49,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.airtnt.entity.Address;
 import com.airtnt.entity.Amentity;
 import com.airtnt.entity.Booking;
 import com.airtnt.entity.City;
 import com.airtnt.entity.Country;
 import com.airtnt.entity.Image;
-import com.airtnt.entity.PriceType;
 import com.airtnt.entity.Review;
 import com.airtnt.entity.Role;
 
@@ -133,9 +133,6 @@ public class RoomRestController {
         filters.put("query", query);
 
         List<Room> rooms = roomService.getRoomsByCategoryId(categoryId, true, 1, filters).getContent();
-        System.out.println("total eles: ");
-        System.out.println(roomService.getRoomsByCategoryId(categoryId, true, 1, filters).getTotalElements());
-        System.out.println("-------------");
 
         List<RoomHomePageDTO> roomHomePageDTOs = new ArrayList<>();
         for (Room room : rooms) {
@@ -242,8 +239,8 @@ public class RoomRestController {
         for (int i = 0; i < payload.getImages().length; i++) {
             images.add(new Image(payload.getImages()[i]));
         }
-        PriceType pt = Objects.equals(payload.getPriceType(), PriceType.PER_NIGHT.name()) ? PriceType.PER_NIGHT
-                : PriceType.PER_WEEK;
+        // PriceType pt = Objects.equals(payload.getPriceType(), PriceType.PER_NIGHT.name()) ? PriceType.PER_NIGHT
+        //         : PriceType.PER_WEEK;
         Country country = new Country(payload.getCountry());
 
         // check if state exist
@@ -261,8 +258,8 @@ public class RoomRestController {
         userService.saveUser(user);
 
         boolean status = user.isPhoneVerified();
-
-        Room room = Room.buildRoom(payload, images, amenities, pt, city, state, country, rules, status);
+        Address address = new Address(country, state, city, "");
+        Room room = Room.buildRoom(payload, images, amenities, address, rules, status);
         Room savedRoom = roomService.save(room);
 
         /* MOVE IMAGE TO FOLDER */
@@ -369,19 +366,19 @@ public class RoomRestController {
         double avgRoomPricePerNight = 0;
         long totalRecords = 0;
 
-        if (priceType.equals(PriceType.PER_NIGHT.name())) {
-            List<RoomPricePerCurrencyDTO> roomPricePerCurrencies = roomService
-                    .findAverageRoomPriceByPriceType(PriceType.PER_NIGHT);
+        // if (priceType.equals(PriceType.PER_NIGHT.name())) {
+        //     List<RoomPricePerCurrencyDTO> roomPricePerCurrencies = roomService
+        //             .findAverageRoomPriceByPriceType(PriceType.PER_NIGHT);
 
-            for (RoomPricePerCurrencyDTO price : roomPricePerCurrencies) {
-                if (price.getUnit().equals("USD"))
-                    avgRoomPricePerNight += price.getTotalPricePerNight() * 23000;
-                else
-                    avgRoomPricePerNight += price.getTotalPricePerNight();
+        //     for (RoomPricePerCurrencyDTO price : roomPricePerCurrencies) {
+        //         if (price.getUnit().equals("USD"))
+        //             avgRoomPricePerNight += price.getTotalPricePerNight() * 23000;
+        //         else
+        //             avgRoomPricePerNight += price.getTotalPricePerNight();
 
-                totalRecords += price.getTotalRecords();
-            }
-        } else {
+        //         totalRecords += price.getTotalRecords();
+        //     }
+        // } else {
             // List<RoomPricePerCurrencyDTO> roomPricePerCurrencies = roomService
             // .findAverageRoomPriceByPriceType(priceType);
             // double averageRoomPricePerNight = 0;
@@ -394,7 +391,7 @@ public class RoomRestController {
 
             // totalRecords += rp.getTotalRecords();
             // }
-        }
+        // }
 
         return new OkResponse<Double>(avgRoomPricePerNight / totalRecords).response();
     }
