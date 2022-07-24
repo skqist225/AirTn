@@ -1,20 +1,20 @@
-import { FC, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import Header from '../components/Header';
+import { FC, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import Header from "../components/Header";
 import {
     fetchInboxBetweenSenderAndReceiver,
     fetchReceivers,
     inboxState,
-} from '../features/inbox/inboxSlice';
+} from "../features/inbox/inboxSlice";
 
-import './css/guest_inbox_page.css';
-import $ from 'jquery';
-import { userState } from '../features/user/userSlice';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import { Image } from '../globalStyle';
-import { getImage } from '../helpers';
+import "./css/guest_inbox_page.css";
+import $ from "jquery";
+import { userState } from "../features/user/userSlice";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
+import { Image } from "../globalStyle";
+import { getImage } from "../helpers";
 
 interface IGuestInboxPageProps {}
 
@@ -26,7 +26,7 @@ const GuestInboxPage: FC<IGuestInboxPageProps> = () => {
     const { chats, receivers } = useSelector(inboxState);
 
     var global = window;
-    Object.assign(global, { WebSocket: require('websocket').w3cwebsocket });
+    Object.assign(global, { WebSocket: require("websocket").w3cwebsocket });
     useEffect(() => {
         // dispatch(fetchInboxBetweenSenderAndReceiver({ receiver: parseInt(receiverid!) }));
         // dispatch(fetchReceivers);
@@ -37,7 +37,7 @@ const GuestInboxPage: FC<IGuestInboxPageProps> = () => {
     let client: any = null;
 
     function connect() {
-        const sockjs = new SockJS('http://localhost:8080/websocket');
+        const sockjs = new SockJS("http://localhost:8080/websocket");
         client = new Client();
         client.webSocketFactory = function () {
             return sockjs;
@@ -45,15 +45,16 @@ const GuestInboxPage: FC<IGuestInboxPageProps> = () => {
         client.connectHeaders = {};
 
         client.onConnect = function (frame: any) {
-            client.subscribe('/user/' + user?.id + '/private', function (message: any) {
-                if (message.headers['content-type'] === 'application/octet-stream') {
+            console.log("Connected: " + frame);
+            client.subscribe("/user/" + user?.id + "/private", function (message: any) {
+                if (message.headers["content-type"] === "application/octet-stream") {
                     const msg = message._binaryBody
                         .reduce((acc: string[], curr: number) => {
                             acc.push(String.fromCharCode(parseInt(curr.toString(), 2)));
 
                             return acc;
                         }, [])
-                        .join('');
+                        .join("");
                     console.log(msg);
                 } else {
                     console.log(message);
@@ -67,8 +68,8 @@ const GuestInboxPage: FC<IGuestInboxPageProps> = () => {
             // Bad login/passcode typically will cause an error
             // Complaint brokers will set `message` header with a brief message. Body may contain details.
             // Compliant brokers will terminate the connection after any error
-            console.log('Broker reported error: ' + frame.headers['message']);
-            console.log('Additional details: ' + frame.body);
+            console.log("Broker reported error: " + frame.headers["message"]);
+            console.log("Additional details: " + frame.body);
         };
 
         client.activate();
@@ -78,16 +79,22 @@ const GuestInboxPage: FC<IGuestInboxPageProps> = () => {
     }, [receiverid]);
 
     function sendMessge() {
-        console.log('Sending message');
+        console.log("Sending message");
         console.log(client);
         if (client === null) connect();
 
+        console.log({
+            sender: user?.id,
+            receiver: receiverid!,
+            message: $("#guest--inbox__input").val(),
+        });
+
         client.publish({
-            destination: '/app/private-message',
+            destination: "/app/private-message",
             body: JSON.stringify({
                 sender: user?.id,
                 receiver: receiverid!,
-                message: $('#guest--inbox__input').val(),
+                message: $("#guest--inbox__input").val(),
             }),
         });
     }
@@ -119,7 +126,7 @@ const GuestInboxPage: FC<IGuestInboxPageProps> = () => {
                                             <Image
                                                 src={getImage(receiver.avatar)}
                                                 alt=''
-                                                width={'50px'}
+                                                width={"50px"}
                                                 height='50px'
                                                 className='rounded-border'
                                             />

@@ -34,11 +34,7 @@ export const updateUserInfo = createAsyncThunk(
     "user/updateUserInfo",
     async (updatedInfo: IUserUpdate, { dispatch, getState, rejectWithValue }) => {
         try {
-            const { data } = await api.post(`/user/update-personal-info`, updatedInfo, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+            const { data } = await api.post(`/user/update-personal-info`, updatedInfo);
             //update local user info
             if (data) setUserToLocalStorage(data as IUser);
 
@@ -70,11 +66,9 @@ export const fetchBookedRooms = createAsyncThunk(
     "user/fetchBookedRooms",
     async ({ query }: { query: string }, { dispatch, getState, rejectWithValue }) => {
         try {
-            const {
-                data: { bookedRooms, ratingLabels },
-            } = await api.get(`/user/booked-rooms?query=${query}`);
+            const { data } = await api.get(`/user/booked-rooms?query=${query}`);
 
-            return { bookedRooms, ratingLabels };
+            return { data };
         } catch (error) {}
     }
 );
@@ -93,7 +87,6 @@ type UserState = {
     wishlistsIDs: number[];
     wishlists: RoomWishlists[];
     bookedRooms: IBookedRoom[];
-    ratingLabels: IRatingLabel[];
 };
 
 const initialState: UserState = {
@@ -110,7 +103,6 @@ const initialState: UserState = {
     wishlistsIDs: [],
     wishlists: [],
     bookedRooms: [],
-    ratingLabels: [],
 };
 
 const userSlice = createSlice({
@@ -132,21 +124,19 @@ const userSlice = createSlice({
                 state.wishlistsIDs = payload?.data;
             })
             .addCase(fetchWishlistsOfCurrentUser.fulfilled, (state, { payload }) => {
-                // state.wishlistsIDsFetching = false;
                 state.wishlists = payload?.data;
             })
-            .addCase(fetchWishlistsOfCurrentUser.pending, (state, { payload }) => {
+            .addCase(fetchWishlistsOfCurrentUser.pending, (state, _) => {
                 state.wishlistsIDsFetching = true;
             })
             .addCase(fetchBookedRooms.fulfilled, (state, { payload }) => {
-                state.bookedRooms = payload?.bookedRooms;
-                state.ratingLabels = payload?.ratingLabels;
+                state.bookedRooms = payload?.data;
             })
             .addCase(updateUserInfo.fulfilled, (state, { payload }) => {
                 state.update.loading = false;
                 state.user = payload?.data;
             })
-            .addCase(updateUserInfo.pending, (state, { payload }) => {
+            .addCase(updateUserInfo.pending, (state, _) => {
                 state.update.loading = true;
             })
             .addCase(updateUserAvatar.fulfilled, (state, { payload }) => {

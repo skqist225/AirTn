@@ -54,6 +54,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .antMatchers(HttpMethod.POST, "/api/booking/*/create").authenticated()
 //                .antMatchers(HttpMethod.GET, "/api/booking/*/canceled", "/api/booking/*/approved").hasRole("Host")
 				.antMatchers("/api/auth/login", "/api/categories", "/api/amenities", "/api/rooms/**", "/api/room-privacy").permitAll()
+//				.antMatchers("/api/user/**").authenticated()
+//				.antMatchers("/api/admin/**").hasRole("Admin")
 //                .antMatchers("/progress/**",
 //                        "/user/bookings", "/hosting/listings/*", "/wishlists*",
 //                        "/become-a-host/*",

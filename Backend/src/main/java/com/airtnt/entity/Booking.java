@@ -88,13 +88,20 @@ public class Booking extends BaseEntity {
 	public float getPricePerDay() {
 		return this.getRoom().getPrice();
 	}
-	
-	@Transient 
+
+	@Getter(AccessLevel.NONE)
+	@Setter(AccessLevel.NONE)
+	@Transient
 	private float totalFee;
+	
+	@Transient
+	public void setTotalFee() {
+		this.totalFee = this.getPricePerDay() * this.getNumberOfDays() + this.getSiteFee() + this.getCleanFee();
+	}
 
 	@Transient
 	public float getTotalFee() {
-		return  this.getPricePerDay() * this.getNumberOfDays() + this.getSiteFee() + this.getCleanFee();
+		return this.totalFee;
 	}
 
 	public Booking(Integer bookingId) {

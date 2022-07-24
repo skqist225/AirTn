@@ -21,8 +21,7 @@ public class ChatAdminController {
 	
 	@MessageMapping("/private-message")
 	public Message receivePrivateMessage (@Payload Message message) {
-		
-		simpmessagingTemplate.convertAndSendToUser(message.getReceiverName(), "/private", message);
+		simpmessagingTemplate.convertAndSendToUser(message.getReceiver(), "/private", message);
 		return message;
 	}
 }

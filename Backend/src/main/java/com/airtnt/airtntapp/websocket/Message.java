@@ -12,9 +12,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class Message {
-	private String senderName;
-	private String receiverName;
+	private String sender;
+	private String receiver;
 	private String message;
-	private String date;
-	private Status status;
+//	private String date;
+//	private Status status;
 }

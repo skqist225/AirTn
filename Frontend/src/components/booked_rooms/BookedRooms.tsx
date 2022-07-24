@@ -15,7 +15,6 @@ import { bookingState, cancelUserBooking, makeReview } from "../../features/book
 
 interface IBookedRoomProps {
     booking: IBookedRoom;
-    ratingLabels: IRatingLabel[];
 }
 
 let cleanlinessRating2 = 0,
@@ -25,7 +24,7 @@ let cleanlinessRating2 = 0,
     locationRating2 = 0,
     valueRating2 = 0;
 
-const BookedRoom: FC<IBookedRoomProps> = ({ booking, ratingLabels }) => {
+const BookedRoom: FC<IBookedRoomProps> = ({ booking }) => {
     const { wishlistsIDs, user, wishlistsIDsFetching } = useSelector(userState);
     const { cancelledBookingId } = useSelector(bookingState);
     const [ratingComment, setRatingComment] = useState(booking.bookingReview);
@@ -36,6 +35,30 @@ const BookedRoom: FC<IBookedRoomProps> = ({ booking, ratingLabels }) => {
     const [locationRating, setLocationRating] = useState(0);
     const [checkinRating, setCheckinRating] = useState(0);
     const [valueRating, setValueRating] = useState(0);
+
+    const ratingLabels: IRatingLabel[] = [
+        {
+            label: "Mức độ sạch sẽ",
+            stars: [1, 2, 3, 4, 5],
+        },
+        {
+            label: "Độ chính xác",
+            stars: [1, 2, 3, 4, 5],
+        },
+        { label: "Liên lạc", stars: [1, 2, 3, 4, 5] },
+        {
+            label: "Vị trí",
+            stars: [1, 2, 3, 4, 5],
+        },
+        {
+            label: "Nhận phòng",
+            stars: [1, 2, 3, 4, 5],
+        },
+        {
+            label: "Giá trị",
+            stars: [1, 2, 3, 4, 5],
+        },
+    ];
 
     const dispatch = useDispatch();
 

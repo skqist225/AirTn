@@ -29,11 +29,9 @@ import com.airtnt.airtntapp.security.UserDetailsImpl;
 import com.airtnt.airtntapp.state.StateService;
 import com.airtnt.airtntapp.user.dto.BookedRoomDTO;
 import com.airtnt.airtntapp.user.dto.PostUpdateUserDTO;
-import com.airtnt.airtntapp.user.dto.RatingDTO;
 import com.airtnt.airtntapp.user.dto.UpdateUserDTO;
 import com.airtnt.airtntapp.user.dto.UserSexDTO;
 import com.airtnt.airtntapp.user.dto.WishlistsDTO;
-import com.airtnt.airtntapp.user.response.BookedRoomsByUser;
 import com.airtnt.entity.Address;
 import com.airtnt.entity.Chat;
 import com.airtnt.entity.City;
@@ -345,31 +343,23 @@ public class UserORestController {
 
 			User savedUser = userService.saveUser(user);
 			if (savedUser != null) {
-				return new OkResponse<String>("Remove from wishlists successfully").response();
+				return new OkResponse<String>("remove from wishlists successfully").response();
 			}
 
-			return new BadResponse<String>("Can not sync user data into database").response();
+			return new BadResponse<String>("can not sync user data into database").response();
 		} catch (RoomNotFoundException e) {
 			return new BadResponse<String>(e.getMessage()).response();
 		}
 	}
 
 	@GetMapping("booked-rooms")
-	public ResponseEntity<StandardJSONResponse<BookedRoomsByUser>> getUserBookedRooms(
+	public ResponseEntity<StandardJSONResponse<List<BookedRoomDTO>>> getUserBookedRooms(
 			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
 			@RequestParam(value = "query", required = false, defaultValue = "") String query) {
 		User user = userDetailsImpl.getUser();
 		List<BookedRoomDTO> bookings = bookingService.getBookedRoomsByUser(user.getId(), query);
 
-		Integer[] starLoop = new Integer[] { 1, 2, 3, 4, 5 };
-		String[] ratingLabel = new String[] { "Mức độ sạch sẽ", "Độ chính xác", "Liên lạc", "Vị trí", "Nhận phòng",
-				"Giá trị" };
-		List<RatingDTO> ratings = new ArrayList<>();
-		for (int i = 0; i < ratingLabel.length; i++) {
-			ratings.add(new RatingDTO(ratingLabel[i], starLoop));
-		}
-
-		return new OkResponse<BookedRoomsByUser>(new BookedRoomsByUser(ratings, bookings)).response();
+		return new OkResponse<List<BookedRoomDTO>>(bookings).response();
 	}
 
 	@DeleteMapping("{userid}")

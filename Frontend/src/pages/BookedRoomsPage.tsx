@@ -21,7 +21,7 @@ interface IBookedRoomsPageProps {}
 const BookedRoomsPage: FC<IBookedRoomsPageProps> = () => {
     const dispatch = useDispatch();
     const { search } = useLocation();
-    const { bookedRooms, ratingLabels } = useSelector(userState);
+    const { bookedRooms } = useSelector(userState);
     const { cancelBookingSuccess, createReviewSuccess, cancelledBookingId } =
         useSelector(bookingState);
 
@@ -109,11 +109,7 @@ const BookedRoomsPage: FC<IBookedRoomsPageProps> = () => {
                             </div>
                         </div>
                         {bookedRooms.map(bookedRoom => (
-                            <BookedRoom
-                                booking={bookedRoom}
-                                ratingLabels={ratingLabels}
-                                key={bookedRoom.bookingId}
-                            />
+                            <BookedRoom booking={bookedRoom} key={bookedRoom.bookingId} />
                         ))}
                     </div>
                 </div>
