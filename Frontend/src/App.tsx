@@ -4,7 +4,7 @@ import {
     BookedRoomsPage,
     GuestInboxPage,
     HomePage,
-    ListingsPage,
+    ManageRoomPage,
     LoginPage,
     ManageBookingsPage,
     ManageRoomDetailsPage,
@@ -43,7 +43,7 @@ function App() {
                         <Route path=':id' element={<RoomDetailsPage />} />
                     </Route>
                     <Route path='/hosting/listings'>
-                        <Route path=':page' element={<ListingsPage />} />
+                        <Route path=':page' element={<ManageRoomPage />} />
                     </Route>
                     <Route path='/wishlists' element={<WishListsPage />}></Route>
                     <Route path='/user/booked-rooms' element={<BookedRoomsPage />}></Route>

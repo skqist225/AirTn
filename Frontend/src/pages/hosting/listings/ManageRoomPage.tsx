@@ -15,9 +15,9 @@ import { userState } from "../../../features/user/userSlice";
 import "./css/listings_page.css";
 import { Pagination } from "../../../components/utils";
 
-interface IListingsPageProps {}
+interface IManageRoomPageProps {}
 
-const ListingsPage: FC<IListingsPageProps> = () => {
+const ManageRoomPage: FC<IManageRoomPageProps> = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { user, loading } = useSelector(userState);
@@ -107,4 +107,4 @@ const ListingsPage: FC<IListingsPageProps> = () => {
     );
 };
 
-export default ListingsPage;
+export default ManageRoomPage;

@@ -32,7 +32,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -47,7 +46,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.airtnt.entity.Address;
 import com.airtnt.entity.Amentity;
-import com.airtnt.entity.Booking;
 import com.airtnt.entity.City;
 import com.airtnt.entity.Country;
 import com.airtnt.entity.Image;

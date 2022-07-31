@@ -413,6 +413,20 @@ public class RoomService {
 		return roomRepository.findAll(pageable);
 	}
 
+	public Page<Room> getAllRooms(int pageNum, String keyword) {
+		// Sort sort = Sort.by(sortField);
+
+		// sort = sortDir.equals("asc") ? sort.ascending() : sort.descending();
+
+		Pageable pageable = PageRequest.of(pageNum - 1, ROOMS_PER_PAGE);
+
+		if (keyword != null) {
+			return roomRepository.findAll(keyword, pageable);
+		}
+
+		return roomRepository.findAll(pageable);
+	}
+
 	public boolean isNameUnique(Integer id, String name) {
 		Room room = roomRepository.findByName(name);
 

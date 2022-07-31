@@ -85,7 +85,7 @@ function RealtimeChart({
       },
     });
     return () => chart.destroy();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [data]);
 
   // Update header values

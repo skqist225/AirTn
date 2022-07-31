@@ -20,7 +20,7 @@ export default function MyNumberForMat({
     priceFontSize,
     priceFontWeight,
     isPrefix,
-    isSuffix,
+    isSuffix = false,
     color,
     removeStayType = false,
 }: IMoneyForMat) {
@@ -67,7 +67,7 @@ export default function MyNumberForMat({
                     suffix={currency}
                     thousandSeparator={true}
                     displayType={"text"}
-                    renderText={(formattedValue: any) => (
+                    renderText={formattedValue => (
                         <div>
                             {priceFontSize !== null ? (
                                 <>
@@ -100,7 +100,7 @@ export default function MyNumberForMat({
                     value={price}
                     thousandSeparator={true}
                     displayType={"text"}
-                    renderText={(formattedValue: any) => (
+                    renderText={formattedValue => (
                         <div>
                             {priceFontSize !== null ? (
                                 <>
