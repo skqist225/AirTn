@@ -1,19 +1,5 @@
 import { createSlice, createAsyncThunk, isAnyOf } from "@reduxjs/toolkit";
 import api from "../../axios";
-import { RootState } from "../../store";
-import { IBooking } from "../../types/booking/type_Booking";
-
-interface IFetchUserBookings {
-    page: number;
-    query?: string;
-    bookingDateMonth?: string;
-    bookingDateYear?: string;
-    bookingDate?: string;
-    isComplete?: string;
-    totalFee?: number;
-    sortField?: string;
-    sortDir?: string;
-}
 
 export const fetchUserBookings = createAsyncThunk(
     "booking/fetchUserBookings",
@@ -28,12 +14,12 @@ export const fetchUserBookings = createAsyncThunk(
             totalFee,
             sortField = "bookingDate",
             sortDir = "desc",
-        }: IFetchUserBookings,
+        },
         { dispatch, getState, rejectWithValue }
     ) => {
         try {
             let fetchUrl = `/booking/listings/${page}?query=${query}`;
-            const state = getState() as RootState;
+            const state = getState();
             const { fetchData } = state.booking;
 
             if (
@@ -76,26 +62,28 @@ export const fetchUserBookings = createAsyncThunk(
             console.info(fetchUrl);
 
             const {
-                data: { bookings, totalElements, totalPages },
+                data: { content, totalElements, totalPages },
             } = await api.get(fetchUrl);
 
-            return { bookings, totalElements, totalPages };
+            return { content, totalElements, totalPages };
         } catch ({ data: { errorMessage } }) {
             rejectWithValue(errorMessage);
         }
     }
 );
 
-interface IMakeReview {
-    bookingId: number;
-    cleanlinessRating: number;
-    contactRating: number;
-    checkinRating: number;
-    accuracyRating: number;
-    locationRating: number;
-    valueRating: number;
-    ratingComment: string;
-}
+export const fetchBookings = createAsyncThunk(
+    "booking/fetchBookings",
+    async (page, { dispatch, getState, rejectWithValue }) => {
+        try {
+            const {
+                data: { bookings, totalElements, totalPages },
+            } = await api.get(`/admin/bookings?page=${page}`);
+
+            return { bookings, totalElements, totalPages };
+        } catch (error) {}
+    }
+);
 
 export const makeReview = createAsyncThunk(
     "booking/makeReview",
@@ -109,7 +97,7 @@ export const makeReview = createAsyncThunk(
             locationRating,
             valueRating,
             ratingComment,
-        }: IMakeReview,
+        },
         { dispatch, getState, rejectWithValue }
     ) => {
         try {
@@ -131,7 +119,7 @@ export const makeReview = createAsyncThunk(
 
 export const cancelUserBooking = createAsyncThunk(
     "booking/cancelUserBooking",
-    async (bookingId: number, { dispatch, getState, rejectWithValue }) => {
+    async (bookingId, { dispatch, getState, rejectWithValue }) => {
         try {
             const data = await api.put(`/booking/${bookingId}/user/canceled`);
 
@@ -144,18 +132,10 @@ export const cancelUserBooking = createAsyncThunk(
     }
 );
 
-interface ICreateBooking {
-    roomid: number;
-    checkinDate: string;
-    checkoutDate: string;
-    numberOfDays: number;
-    clientMessage: string;
-}
-
 export const createBooking = createAsyncThunk(
     "booking/createBooking",
     async (
-        { roomid, checkinDate, checkoutDate, numberOfDays, clientMessage }: ICreateBooking,
+        { roomid, checkinDate, checkoutDate, numberOfDays, clientMessage },
         { dispatch, getState, rejectWithValue }
     ) => {
         try {
@@ -170,14 +150,9 @@ export const createBooking = createAsyncThunk(
     }
 );
 
-interface IStripeArgs {
-    currency: string;
-    price: number;
-}
-
 export const getStripeClientSecret = createAsyncThunk(
     "booking/getStripeClientSecret",
-    async (fetchPayload: IStripeArgs, { dispatch, getState, rejectWithValue }) => {
+    async (fetchPayload, { dispatch, getState, rejectWithValue }) => {
         try {
             const data = await api.post(`/create-payment-intent`, fetchPayload);
             return { data };
@@ -189,10 +164,10 @@ export const getStripeClientSecret = createAsyncThunk(
 
 export const cancelBooking = createAsyncThunk(
     "booking/cancelBooking",
-    async ({ bookingid }: { bookingid: number }, { dispatch, getState, rejectWithValue }) => {
+    async ({ bookingid }, { dispatch, getState, rejectWithValue }) => {
         try {
             const { data } = await api.put(`/booking/${bookingid}/host/canceled`);
-            const state = getState() as RootState;
+            const state = getState();
             const { fetchData } = state.booking;
             dispatch(fetchUserBookings({ ...fetchData }));
 
@@ -205,7 +180,7 @@ export const cancelBooking = createAsyncThunk(
 
 export const approveBooking = createAsyncThunk(
     "booking/approveBooking",
-    async ({ bookingid }: { bookingid: number }, { dispatch, getState, rejectWithValue }) => {
+    async ({ bookingid }, { dispatch, getState, rejectWithValue }) => {
         try {
             const { data } = await api.put(`/booking/${bookingid}/approved`);
             return { data };
@@ -215,21 +190,7 @@ export const approveBooking = createAsyncThunk(
     }
 );
 
-type BookingState = {
-    bookingsOfCurrentUserRooms: IBooking[];
-    totalElements: number;
-    loading: boolean;
-    clientSecret: string;
-    newlyCreatedBooking: any;
-    cancelMessage: string;
-    fetchData: IFetchUserBookings;
-    totalPages: number;
-    createReviewSuccess: boolean;
-    cancelBookingSuccess: boolean;
-    cancelledBookingId: number;
-};
-
-const initialState: BookingState = {
+const initialState = {
     bookingsOfCurrentUserRooms: [],
     totalElements: 0,
     loading: true,
@@ -250,6 +211,12 @@ const initialState: BookingState = {
     createReviewSuccess: false,
     cancelBookingSuccess: false,
     cancelledBookingId: 0,
+    listing: {
+        bookings: [],
+        loading: true,
+        totalPages: 0,
+        totalElements: 0,
+    },
 };
 
 const bookingSlice = createSlice({
@@ -300,15 +267,21 @@ const bookingSlice = createSlice({
     },
     extraReducers: builder => {
         builder
+            .addCase(fetchBookings.fulfilled, (state, { payload }) => {
+                state.listing.loading = false;
+                state.listing.bookings = payload.bookings;
+                state.listing.totalElements = payload.totalElements;
+                state.listing.totalPages = payload.totalPages;
+            })
             .addCase(fetchUserBookings.fulfilled, (state, { payload }) => {
                 state.loading = false;
-                state.bookingsOfCurrentUserRooms = payload?.bookings;
+                state.bookingsOfCurrentUserRooms = payload?.content;
                 state.totalElements = payload?.totalElements;
                 state.totalPages = payload?.totalPages;
             })
             .addCase(getStripeClientSecret.fulfilled, (state, { payload }) => {
                 state.loading = false;
-                state.clientSecret = (payload!.data as any).clientSecret!;
+                state.clientSecret = payload.data.clientSecret;
             })
             .addCase(createBooking.fulfilled, (state, { payload }) => {
                 state.loading = false;
@@ -348,5 +321,5 @@ export const {
     clearAllFetchData,
     setCancelledBooking,
 } = bookingSlice.actions;
-export const bookingState = (state: RootState) => state.booking;
+export const bookingState = state => state.booking;
 export default bookingSlice.reducer;

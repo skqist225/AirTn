@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 import com.airtnt.entity.Booking;
 import com.airtnt.entity.Room;
+import com.airtnt.entity.Status;
 import com.airtnt.entity.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -31,8 +32,7 @@ public class BookingListDTO implements Serializable {
     private String roomThumbnail;
     private String roomCurrency;
 
-    private boolean isComplete;
-    private boolean isRefund;
+    private Status state;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime bookingDate;
@@ -51,23 +51,30 @@ public class BookingListDTO implements Serializable {
     private long numberOfDays;
     private float siteFee;
     private float refundPaid;
+    private float totalFee;
 
     private String customerName;
     private String customerAvatar;
 
-    public static BookingListDTO buildDTO(Booking b) {
-        Room room = b.getRoom();
-        User customer = b.getCustomer();
+    private String roomHostName;
+    private String roomHostAvatar;
 
-        return new BookingListDTO(b.getId(),
+    public static BookingListDTO build(Booking booking) {
+        Room room = booking.getRoom();
+        User customer = booking.getCustomer();
+
+        return new BookingListDTO(booking.getId(),
                 room.getId(), room.getName(),
                 room.renderThumbnailImage(),
                 room.getCurrency().getSymbol(),
-                b.isComplete(), b.isRefund(),
-                b.getBookingDate(), b.getCancelDate(), b.getCheckinDate(),
-                b.getCheckoutDate(),
-                b.getRoom().getPrice(), b.getNumberOfDays(), b.getSiteFee(), b.getRefundPaid(),
+                booking.getState(),
+                booking.getBookingDate(), booking.getCancelDate(), booking.getCheckinDate(),
+                booking.getCheckoutDate(),
+                room.getPrice(), booking.getNumberOfDays(), booking.getSiteFee(), booking.getRefundPaid(),
+                booking.getTotalFee(),
                 customer.getFullName(),
-                customer.getAvatarPath());
+                customer.getAvatarPath(),
+                room.getHost().getFullName(),
+                room.getHost().getAvatarPath());
     }
 }

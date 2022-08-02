@@ -1,4 +1,4 @@
-package com.airtnt.airtntapp.user.response;
+package com.airtnt.airtntapp.user.dto;
 
 import lombok.AllArgsConstructor;
 

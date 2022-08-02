@@ -47,14 +47,14 @@ const GlobalStyle = createGlobalStyle`
         justify-content: center;
     }
 
-    // .flex-1 {
-    //     flex: 1;
-    //     max-width: 50%;
-    // }
+    .my_flex-1 {
+        flex: 1;
+        max-width: 50%;
+    }
 
-    // .f1 {
-    //     flex: 1;
-    // }
+    .my_f1 {
+        flex: 1;
+    }
 
     .inline-block {
         display: inline-block;

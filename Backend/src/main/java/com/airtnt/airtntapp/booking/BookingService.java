@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,10 +32,10 @@ import com.airtnt.airtntapp.exception.UserHasBeenBookedThisRoomException;
 import com.airtnt.airtntapp.user.dto.BookedRoomDTO;
 import com.airtnt.entity.Booking;
 import com.airtnt.entity.Room;
+import com.airtnt.entity.Status;
 import com.airtnt.entity.User;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -56,6 +55,20 @@ public class BookingService {
 
 	public Booking findById(Integer bookingId) {
 		return bookingRepository.findById(bookingId).get();
+	}
+
+	public Page<Booking> getAllBookings(int pageNum, String keyword) {
+		// Sort sort = Sort.by(sortField);
+
+		// sort = sortDir.equals("asc") ? sort.ascending() : sort.descending();
+
+		Pageable pageable = PageRequest.of(pageNum - 1, BOOKINGS_PER_PAGE);
+
+		// if (keyword != null) {
+		// return bookingRepository.findAll(keyword, pageable);
+		// }
+
+		return bookingRepository.findAll(pageable);
 	}
 
 	public Booking getBookingById(Integer bookingId) throws BookingNotFoundException {
@@ -112,7 +125,7 @@ public class BookingService {
 
 		Booking booking = Booking.builder().checkinDate(checkinDate).checkoutDate(checkoutDate).siteFee(siteFee)
 				.room(room).customer(customer).bookingDate(LocalDateTime.now()).cleanFee(cleanFee)
-				.clientMessage(clientMessage).isComplete(false).build();
+				.clientMessage(clientMessage).state(Status.PENDING).build();
 
 		Booking savedBooking = bookingRepository.save(booking);
 
@@ -166,99 +179,6 @@ public class BookingService {
 		for (Booking booking : bookings)
 			bookedRoomDTOs.add(BookedRoomDTO.build(booking));
 		return bookedRoomDTOs;
-	}
-
-	public Page<Booking> getBookingsByRooms(Integer[] roomIds, int pageNumber, Map<String, String> filters)
-			throws ParseException {
-		String sortField = filters.get("sortField");
-		String sortDir = filters.get("sortDir");
-		String query = filters.get("query");
-
-		LocalDateTime bookingDate = LocalDateTime.now();
-		LocalDateTime bookingDate2 = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
-		String bookingDateStr = filters.get("bookingDate");
-		if (!bookingDateStr.isEmpty()) {
-			String[] bookingDateLst = bookingDateStr.split("-");
-			int year = Integer.parseInt(bookingDateLst[0]);
-			int month = Integer.parseInt(bookingDateLst[1]);
-			int day = Integer.parseInt(bookingDateLst[2]);
-
-			bookingDate = LocalDateTime.of(year, month, day, 23, 0, 0);
-			bookingDate2 = LocalDateTime.of(year, month, day, 0, 0, 0);
-		}
-
-		Integer bookingId = -1;
-		if (NumberUtils.isNumber(query)) {
-			bookingId = Integer.parseInt(query);
-		}
-		// Default case: get all bookings with 3 stage
-		List<Boolean> isCompleteLst = new ArrayList<>();
-		isCompleteLst.add(true);
-		isCompleteLst.add(false);
-		List<Boolean> isCancelledLst = new ArrayList<>();
-		isCancelledLst.add(true);
-		isCancelledLst.add(false);
-		// End of default case
-
-		Sort sort = Sort.by(sortField);
-		if (sortField.equals("room-name")) {
-			sort = Sort.by("room.name");
-		}
-		if (sortField.equals("customer-fullName")) {
-			Sort sortByCustomerFirstName = Sort.by("customer.firstName");
-			Sort sortByCustomerLastName = Sort.by("customer.lastName");
-			sort = sortByCustomerFirstName.and(sortByCustomerLastName);
-		}
-
-		sort = sortDir.equals("asc") ? sort.ascending() : sort.descending();
-		Pageable pageable = PageRequest.of(pageNumber - 1, MAX_BOOKING_PER_FETCH_BY_HOST, sort); // pase base 0
-
-		String isCompleteStr = filters.get("isComplete");
-		if (!isCompleteStr.isEmpty()) {
-
-			if (isCompleteStr.contains("1") && isCompleteStr.contains("0") && isCompleteStr.contains("2")) {
-
-			} else if (isCompleteStr.contains("1") && isCompleteStr.contains("0")) {
-				isCancelledLst.remove(true);
-			} else if (isCompleteStr.contains("0") && isCompleteStr.contains("2")) {
-				isCompleteLst.remove(true);
-			} else if (isCompleteStr.contains("1") && isCompleteStr.contains("2")) {
-				return bookingRepository.getBookingsByRooms(roomIds, query, true, true, pageable);
-			} else {
-				String[] isComplete = isCompleteStr.split(" ");
-
-				for (int i = 0; i < isComplete.length; i++) {
-					if (isComplete[i].equals("1")) {
-						isCompleteLst.remove(false);
-						isCancelledLst.remove(true);
-					}
-					if (isComplete[i].equals("0")) {
-						isCompleteLst.remove(true);
-						isCancelledLst.remove(true);
-					}
-					if (isComplete[i].equals("2")) {
-						if (!isCancelledLst.contains(true))
-							isCancelledLst.add(true);
-						isCancelledLst.remove(false);
-					}
-				}
-			}
-		}
-
-		String bookingDateYear = filters.get("bookingDateYear");
-		String bookingDateMonth = filters.get("bookingDateMonth");
-		Float totalFee = Float.parseFloat(filters.get("totalFee"));
-
-		if (!bookingDateMonth.isEmpty() && !bookingDateYear.isEmpty()) {
-			return bookingRepository.getBookingsByRooms(roomIds, query, isCompleteLst, isCancelledLst,
-					Integer.parseInt(bookingDateYear), Integer.parseInt(bookingDateMonth), pageable);
-		}
-
-		if (bookingId != -1)
-			return bookingRepository.getBookingsByRooms(roomIds, bookingId, pageable);
-		else
-			return bookingRepository.getBookingsByRooms(roomIds, query, isCompleteLst, isCancelledLst, bookingDate,
-					bookingDate2, totalFee, pageable);
 	}
 
 	public BookingListResponse getBookingListByRooms(List<Integer> roomIds, Map<String, String> filters, int page) {
@@ -397,7 +317,6 @@ public class BookingService {
 						root.get("checkinDate"), root.get("checkoutDate")).as(Float.class);
 				Expression<Float> roomFee = criteriaBuilder.prod(numberOfDays, root.get("room").get("price"));
 				Expression<Float> summ = criteriaBuilder.sum(criteriaBuilder.sum(roomFee, siteFee), cleanFee);
-				
 
 				predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(summ, totalFee)));
 
@@ -407,7 +326,7 @@ public class BookingService {
 
 		List<BookingListDTO> bookingListDTOs = new ArrayList<>();
 		for (Booking b : bookingPage.toList()) {
-			bookingListDTOs.add(BookingListDTO.buildDTO(b));
+			bookingListDTOs.add(BookingListDTO.build(b));
 		}
 
 		return new BookingListResponse(bookingListDTOs, bookingPage.getTotalElements(), bookingPage.getTotalPages());
@@ -424,8 +343,7 @@ public class BookingService {
 			throw new ForbiddenException("You are not the host of the room");
 
 		canceledBooking.setCancelDate(cancelDate);
-		canceledBooking.setRefund(true);
-		canceledBooking.setComplete(false);
+		canceledBooking.setState(Status.CANCELLED);
 		// canceledBooking.setRefundPaid(canceledBooking.getTotalFee());
 
 		return bookingRepository.save(canceledBooking);
@@ -440,7 +358,7 @@ public class BookingService {
 		if (!user.getId().equals(canceledBooking.getCustomer().getId()))
 			throw new ForbiddenException("You are not the owner of this booking");
 
-		if (canceledBooking.isRefund() == true && canceledBooking.isComplete() == false)
+		if (canceledBooking.getState().equals(Status.CANCELLED))
 			throw new AlreadyCancelException("You have been canceled this room");
 
 		LocalDateTime checkinDate = canceledBooking.getCheckinDate().toInstant().atZone(ZoneId.systemDefault())
@@ -470,8 +388,7 @@ public class BookingService {
 		// User will only get half of the refund paid.
 
 		canceledBooking.setCancelDate(cancelDate);
-		canceledBooking.setRefund(true);
-		canceledBooking.setComplete(false);
+		canceledBooking.setState(Status.CANCELLED);
 
 		return bookingRepository.save(canceledBooking);
 	}
@@ -486,7 +403,7 @@ public class BookingService {
 				throw new ForbiddenException(); // if user sent request is not host of the room
 			}
 
-			approvedBooking.setComplete(true);
+			approvedBooking.setState(Status.APPROVED);
 
 			return bookingRepository.save(approvedBooking);
 		} catch (BookingNotFoundException e) {
@@ -544,17 +461,17 @@ public class BookingService {
 	// return bookingRepository.getRevenueInSpecificYear(year);
 	// }
 
-	public Integer getNumberOfBookingComplete() {
-		return bookingRepository.getNumberOfBookingComplete();
-	}
+	// public Integer getNumberOfBookingComplete() {
+	// return bookingRepository.getNumberOfBookingComplete();
+	// }
 
-	public Integer getNumberOfBookingNotComplete() {
-		return bookingRepository.getNumberOfBookingNotComplete();
-	}
+	// public Integer getNumberOfBookingNotComplete() {
+	// return bookingRepository.getNumberOfBookingNotComplete();
+	// }
 
-	public Integer getNumberOfBookingRefund() {
-		return bookingRepository.getNumberOfBookingRefund();
-	}
+	// public Integer getNumberOfBookingRefund() {
+	// return bookingRepository.getNumberOfBookingRefund();
+	// }
 
 	public List<BookingStatsPerDayDTO> getBookingStatsPerDay(Integer month, Integer year) {
 		return bookingRepository.getBookingStatsPerDay(month, year);

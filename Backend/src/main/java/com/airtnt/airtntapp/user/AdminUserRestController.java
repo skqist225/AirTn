@@ -1,4 +1,4 @@
-package com.airtnt.airtntapp.room;
+package com.airtnt.airtntapp.user;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,27 +13,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.airtnt.airtntapp.response.StandardJSONResponse;
 import com.airtnt.airtntapp.response.success.OkResponse;
-import com.airtnt.airtntapp.room.dto.page.listings.RoomListingsDTO;
-import com.airtnt.airtntapp.room.response.RoomsOwnedByUserResponseEntity;
-import com.airtnt.entity.Room;
+import com.airtnt.airtntapp.user.dto.UserListDTO;
+import com.airtnt.airtntapp.user.dto.UserListResponse;
+import com.airtnt.entity.User;
 
 @RestController
 @RequestMapping("/api/admin/")
-public class AdminRoomRestController {
+public class AdminUserRestController {
     @Autowired
-    private RoomService roomService;
+    private UserService userService;
 
-    @GetMapping("rooms")
-    public ResponseEntity<StandardJSONResponse<RoomsOwnedByUserResponseEntity>> fetchUserOwnedRooms(
-            @RequestParam("page") int page,
-            @RequestParam(value = "keyword", required = false) String keyword) {
-        Page<Room> roomsPage = roomService.getAllRooms(page, keyword);
+    @GetMapping("users")
+    public ResponseEntity<StandardJSONResponse<UserListResponse>> getAllUsers(@RequestParam("page") int pageNumber,
+            @RequestParam(value = "keyword", defaultValue = "", required = false) String keyword) {
+        Page<User> userPages = userService.getAllUsers(pageNumber, keyword);
 
-        List<RoomListingsDTO> roomListingsDTOs = new ArrayList<>();
-        RoomsOwnedByUserResponseEntity roomsOwnedByUserResponseEntity = new RoomsOwnedByUserResponseEntity();
+        List<UserListDTO> userListDTOs = new ArrayList<>();
+        UserListResponse userListResponse = new UserListResponse();
 
-        for (Room room : roomsPage.getContent()) {
-            roomListingsDTOs.add(RoomListingsDTO.buildRoomListingsDTO(room));
+        for (User booking : userPages.getContent()) {
+            userListDTOs.add(UserListDTO.build(booking));
             // redisTemplate.opsForHash().put("ROOM", room.getId().toString(),
             // RoomListingsDTO.buildRoomListingsDTO(room));
         }
@@ -55,11 +54,10 @@ public class AdminRoomRestController {
         // redisTemplate.opsForHash().put("TOTAL_ELS", "TOTAL_ELS", (Long)
         // roomsPage.getTotalElements());
 
-        roomsOwnedByUserResponseEntity.setRooms(roomListingsDTOs);
-        roomsOwnedByUserResponseEntity.setTotalPages(roomsPage.getTotalPages());
-        roomsOwnedByUserResponseEntity.setTotalRecords(roomsPage.getTotalElements());
+        userListResponse.setUsers(userListDTOs);
+        userListResponse.setTotalPages(userPages.getTotalPages());
+        userListResponse.setTotalElements(userPages.getTotalElements());
 
-        return new OkResponse<RoomsOwnedByUserResponseEntity>(roomsOwnedByUserResponseEntity).response();
-
+        return new OkResponse<UserListResponse>(userListResponse).response();
     }
 }

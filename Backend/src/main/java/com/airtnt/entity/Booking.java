@@ -7,6 +7,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -44,10 +46,6 @@ public class Booking extends BaseEntity {
 	@JsonFormat(pattern = "dd-MM-yyyy")
 	private LocalDateTime cancelDate;
 
-	@Builder.Default
-	@Column(columnDefinition = "boolean default false")
-	private boolean isRefund = false;
-
 	@Column(columnDefinition = "Decimal(20,2) default '0.00'")
 	private float refundPaid;
 
@@ -57,7 +55,8 @@ public class Booking extends BaseEntity {
 	@Column(columnDefinition = "Decimal(20,2)", nullable = false)
 	private float cleanFee;
 
-	private boolean isComplete; // 3 state: pending success cancelled
+	@Enumerated(EnumType.STRING)
+	private Status state;
 
 	@ManyToOne
 	@JoinColumn(name = "customer_id", nullable = false)
@@ -69,6 +68,10 @@ public class Booking extends BaseEntity {
 
 	@OneToOne(mappedBy = "booking")
 	private Review review;
+
+	@ManyToOne
+	@JoinColumn(name = "card_id")
+	private Card card;
 
 	private String clientMessage;
 
@@ -89,19 +92,9 @@ public class Booking extends BaseEntity {
 		return this.getRoom().getPrice();
 	}
 
-	@Getter(AccessLevel.NONE)
-	@Setter(AccessLevel.NONE)
-	@Transient
-	private float totalFee;
-	
-	@Transient
-	public void setTotalFee() {
-		this.totalFee = this.getPricePerDay() * this.getNumberOfDays() + this.getSiteFee() + this.getCleanFee();
-	}
-
 	@Transient
 	public float getTotalFee() {
-		return this.totalFee;
+		return this.getPricePerDay() * this.getNumberOfDays() + this.getSiteFee() + this.getCleanFee();
 	}
 
 	public Booking(Integer bookingId) {

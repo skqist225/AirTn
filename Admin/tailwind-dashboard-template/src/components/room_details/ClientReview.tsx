@@ -32,7 +32,7 @@ const ClientReview = ({ room }) => {
                     </span>
                 </div>
                 <div className='normal-flex' style={{ marginBottom: "42px" }}>
-                    <div className='flex-1'>
+                    <div className='my_flex-1'>
                         {leftReviewLines.map(({ title, id }) => (
                             <ReviewLine title={title} id={id} key={title} />
                         ))}

@@ -2,13 +2,26 @@ import { createSlice, createAsyncThunk, isAnyOf } from "@reduxjs/toolkit";
 import api from "../../axios";
 import { setUserToLocalStorage } from "../common";
 
+export const fetchUsers = createAsyncThunk(
+    "user/fetchUsers",
+    async (page, { dispatch, getState, rejectWithValue }) => {
+        try {
+            const {
+                data: { users, totalElements, totalPages },
+            } = await api.get(`/admin/users?page=${page}`);
+
+            return { users, totalElements, totalPages };
+        } catch (error) {}
+    }
+);
+
 export const fetchWishlistsIDsOfCurrentUser = createAsyncThunk(
     "user/fetchWishlistsIDsOfCurrentUser",
     async (_, { dispatch, getState, rejectWithValue }) => {
         try {
             const { data } = await api.get(`/user/wishlists/ids`);
             return { data };
-        } catch (error) { }
+        } catch (error) {}
     }
 );
 
@@ -18,7 +31,7 @@ export const fetchWishlistsOfCurrentUser = createAsyncThunk(
         try {
             const { data } = await api.get(`/user/wishlists`);
             return { data };
-        } catch (error) { }
+        } catch (error) {}
     }
 );
 
@@ -31,7 +44,7 @@ export const updateUserInfo = createAsyncThunk(
             if (data) setUserToLocalStorage(data);
 
             return { data };
-        } catch (error) { }
+        } catch (error) {}
     }
 );
 
@@ -50,7 +63,7 @@ export const updateUserAvatar = createAsyncThunk(
             }
 
             return { data };
-        } catch (error) { }
+        } catch (error) {}
     }
 );
 
@@ -61,7 +74,7 @@ export const fetchBookedRooms = createAsyncThunk(
             const { data } = await api.get(`/user/booked-rooms?query=${query}`);
 
             return { data };
-        } catch (error) { }
+        } catch (error) {}
     }
 );
 
@@ -79,6 +92,12 @@ const initialState = {
     wishlistsIDs: [],
     wishlists: [],
     bookedRooms: [],
+    listing: {
+        users: [],
+        loading: true,
+        totalElements: 0,
+        totalPages: 0,
+    },
 };
 
 const userSlice = createSlice({
@@ -91,7 +110,12 @@ const userSlice = createSlice({
     },
     extraReducers: builder => {
         builder
-
+            .addCase(fetchUsers.fulfilled, (state, { payload }) => {
+                state.listing.loading = false;
+                state.listing.users = payload.users;
+                state.listing.totalElements = payload.totalElements;
+                state.listing.totalPages = payload.totalPages;
+            })
             .addCase(fetchWishlistsIDsOfCurrentUser.pending, (state, { payload }) => {
                 state.wishlistsIDsFetching = true;
             })
@@ -127,5 +151,5 @@ const userSlice = createSlice({
 });
 
 export const { setUser } = userSlice.actions;
-export const userState = (state) => state.user;
+export const userState = state => state.user;
 export default userSlice.reducer;

@@ -23,7 +23,7 @@ import com.airtnt.entity.User;
 @Service
 @Transactional
 public class UserService {
-	public static final int USERS_PER_PAGE = 4;
+	public static final int USERS_PER_PAGE = 10;
 
 	@Autowired
 	private CountryRepository countryRepository;
@@ -33,6 +33,11 @@ public class UserService {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	public Page<User> getAllUsers(int pageNumber, String keyword) {
+		Pageable pageable = PageRequest.of(pageNumber - 1, USERS_PER_PAGE);
+		return userRepository.findAll(keyword, pageable);
+	}
 
 	public void encodePassword(User user) {
 		String encodedPassword = passwordEncoder.encode(user.getPassword());
@@ -55,7 +60,7 @@ public class UserService {
 
 	public boolean isEmailUnique(Integer id, String email) {
 		User userByEmail = userRepository.findByEmail(email).get();
-		
+
 		if (userByEmail == null)
 			return true;
 

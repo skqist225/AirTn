@@ -2,13 +2,13 @@ import { configureStore } from "@reduxjs/toolkit";
 import { combineReducers } from "redux";
 import {
     // countrySlice,
-    // categorySlice,
+    categorySlice,
     roomSlice,
     userSlice,
     // stateSlice,
     // citySlice,
     // amenitySlice,
-    // bookingSlice,
+    bookingSlice,
     // reviewSlice,
     // earningSlice,
     // inboxSlice,
@@ -17,13 +17,13 @@ import {
 
 const rootReducer = combineReducers({
     room: roomSlice,
-    // category: categorySlice,
+    category: categorySlice,
     // country: countrySlice,
     // state: stateSlice,
     // city: citySlice,
     user: userSlice,
     // amenity: amenitySlice,
-    // booking: bookingSlice,
+    booking: bookingSlice,
     // review: reviewSlice,
     // earning: earningSlice,
     // inbox: inboxSlice,
@@ -50,6 +50,12 @@ const store = configureStore({
                 errorMessage: null,
             },
             wishlistsIDsFetching: true,
+            listing: {
+                users: [],
+                loading: true,
+                totalElements: 0,
+                totalPages: 0,
+            },
         },
     },
 });

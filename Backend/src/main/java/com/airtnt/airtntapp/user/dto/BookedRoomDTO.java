@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 import com.airtnt.entity.Booking;
+import com.airtnt.entity.Status;
 import com.airtnt.entity.SubRating;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.auto.value.AutoValue.Builder;
@@ -33,8 +34,7 @@ public class BookedRoomDTO {
     private float pricePerDay;
     private long numberOfDays;
     private float siteFee;
-    private boolean isComplete;
-    private boolean isRefund;
+    private Status state;
 
     private Integer roomId;
     private String roomThumbnail;
@@ -62,7 +62,7 @@ public class BookedRoomDTO {
 
         return new BookedRoomDTO(b.getId(), b.getBookingDate(), b.getCheckinDate(), b.getCheckoutDate(),
                 b.getPricePerDay(), b.getNumberOfDays(),
-                b.getSiteFee(), b.isComplete(), b.isRefund(), b.getRoom().getId(), roomThumbnail, b.getRoom().getName(),
+                b.getSiteFee(), b.getState(), b.getRoom().getId(), roomThumbnail, b.getRoom().getName(),
                 userFullName,
                 userAvatar, b.getRoom().getCurrency().getSymbol(), b.getRoom().getPrivacyType().getName(),
                 b.getRoom().getCategory().getName(),

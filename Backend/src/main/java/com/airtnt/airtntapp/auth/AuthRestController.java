@@ -37,7 +37,7 @@ import com.airtnt.airtntapp.user.UserService;
 import com.airtnt.airtntapp.user.dto.RegisterDTO;
 import com.airtnt.airtntapp.user.dto.ResetPasswordByPhoneNumberDTO;
 import com.airtnt.airtntapp.user.dto.ResetPasswordDTO;
-import com.airtnt.airtntapp.user.response.ForgotPasswordResponse;
+import com.airtnt.airtntapp.user.dto.ForgotPasswordResponse;
 import com.airtnt.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -82,7 +82,7 @@ public class AuthRestController {
 	}
 
 	@GetMapping("logout")
-	public ResponseEntity<StandardJSONResponse<String>> logout() {	
+	public ResponseEntity<StandardJSONResponse<String>> logout() {
 		return new OkResponse<String>("Log out successfully").response();
 	}
 

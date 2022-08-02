@@ -99,6 +99,11 @@ public class User extends BaseEntity {
 	@OneToMany(mappedBy = "host", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
 	private List<Room> ownedRooms = new ArrayList<>();
 
+	@Builder.Default
+	@JsonIgnore
+	@OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+	private List<Card> cards = new ArrayList<>();
+
 	@JsonIgnore
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "address_id")

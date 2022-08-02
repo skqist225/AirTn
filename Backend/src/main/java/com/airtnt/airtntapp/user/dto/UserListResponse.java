@@ -1,4 +1,4 @@
-package com.airtnt.airtntapp.booking.dto;
+package com.airtnt.airtntapp.user.dto;
 
 import java.util.List;
 
@@ -11,8 +11,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookingListResponse {
-    private List<BookingListDTO> bookings;
+public class UserListResponse {
+    private List<UserListDTO> users;
     private long totalElements;
     private long totalPages;
 }

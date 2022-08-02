@@ -20,23 +20,40 @@ import DashboardCard11 from "../partials/dashboard/DashboardCard11";
 import DashboardCard12 from "../partials/dashboard/DashboardCard12";
 import DashboardCard13 from "../partials/dashboard/DashboardCard13";
 import { useDispatch, useSelector } from "react-redux";
-
+import { RoomsPage, BookingsPage, UsersPage } from ".";
 import { useLocation } from "react-router-dom";
 import { fetchRooms } from "../features/room/roomSlice";
-import { RoomsPage } from ".";
+import { fetchBookings } from "../features/booking/bookingSlice";
+import { fetchUsers } from "../features/user/userSlice";
+import { fetchCategories } from "../features/category/categorySlice";
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch();
-  const { hosting: { rooms } } = useSelector(state => state.room);
 
   const { pathname } = useLocation();
 
   useEffect(() => {
-    if (pathname === "/rooms") {
-      dispatch(fetchRooms(1));
+    console.log(pathname)
+    switch (pathname) {
+      case "/rooms": {
+        dispatch(fetchRooms(1));
+        break;
+      }
+      case "/categories": {
+        dispatch(fetchCategories());
+      }
+      case "/bookings": {
+        dispatch(fetchBookings(1));
+        break;
+      }
+      case "/users": {
+        dispatch(fetchUsers(1));
+        console.log("asd")
+        break;
+      }
     }
-  }, [pathname])
+  }, [pathname]);
 
   return (
     <div className='flex h-screen overflow-hidden'>
@@ -50,9 +67,20 @@ function Dashboard() {
 
         <main>
           <div className='px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto'>
+            {pathname === "/users" && (
+              <>
+                <UsersPage />
+              </>
+            )}
             {pathname === "/rooms" && (
               <>
-                <RoomsPage rooms={rooms} />
+                <RoomsPage />
+              </>
+            )}
+
+            {pathname === "/bookings" && (
+              <>
+                <BookingsPage />
               </>
             )}
 
@@ -118,7 +146,6 @@ function Dashboard() {
             )}
           </div>
         </main>
-
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ package com.airtnt.airtntapp.room.dto.page.listings;
 import java.io.Serializable;
 import java.util.Date;
 import com.airtnt.entity.Room;
+import com.airtnt.entity.User;
 import com.airtnt.entity.Address;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,12 +20,17 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class RoomListingsDTO implements Serializable {
-    private Integer id;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Integer id;
     private String name;
     private String thumbnail;
     private String currency;
     private String category;
     private String location;
+    private User host;
     private float price;
     private int bedroomCount;
     private int bathroomCount;
@@ -57,6 +63,7 @@ public class RoomListingsDTO implements Serializable {
                 .createdDate(room.getCreatedDate())
                 .updatedDate(room.getUpdatedDate())
                 .location(location)
+                .host(room.getHost())
                 .build();
     }
 }

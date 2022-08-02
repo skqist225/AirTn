@@ -29,6 +29,8 @@ function App() {
         <Route exact path="/" element={<Dashboard />} />
         <Route path="/rooms" element={<Dashboard />} />
         <Route path="/room/:roomid" element={<RoomDetailsPage />} />
+        <Route path="/bookings" element={<Dashboard />} />
+        <Route path="/users" element={<Dashboard />} />
       </Routes>
     </>
   );
