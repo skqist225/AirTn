@@ -7,11 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.airtnt.airtntapp.exception.UserNotFoundException;
 import com.airtnt.airtntapp.response.StandardJSONResponse;
+import com.airtnt.airtntapp.response.error.BadResponse;
 import com.airtnt.airtntapp.response.success.OkResponse;
 import com.airtnt.airtntapp.user.dto.UserListDTO;
 import com.airtnt.airtntapp.user.dto.UserListResponse;
@@ -31,8 +34,8 @@ public class AdminUserRestController {
         List<UserListDTO> userListDTOs = new ArrayList<>();
         UserListResponse userListResponse = new UserListResponse();
 
-        for (User booking : userPages.getContent()) {
-            userListDTOs.add(UserListDTO.build(booking));
+        for (User user : userPages.getContent()) {
+            userListDTOs.add(UserListDTO.build(user));
             // redisTemplate.opsForHash().put("ROOM", room.getId().toString(),
             // RoomListingsDTO.buildRoomListingsDTO(room));
         }
@@ -59,5 +62,14 @@ public class AdminUserRestController {
         userListResponse.setTotalElements(userPages.getTotalElements());
 
         return new OkResponse<UserListResponse>(userListResponse).response();
+    }
+
+    @GetMapping("users/{id}")
+    public ResponseEntity<StandardJSONResponse<User>> getUser(@PathVariable(value = "id") Integer id) {
+        try {
+            return new OkResponse<User>(userService.findById(id)).response();
+        } catch (UserNotFoundException e) {
+            return new BadResponse<User>(e.getMessage()).response();
+        }
     }
 }

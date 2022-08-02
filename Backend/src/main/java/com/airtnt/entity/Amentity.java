@@ -26,7 +26,7 @@ public class Amentity extends BaseEntity {
 	private boolean favorite;
 	private boolean safe;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "amtcategory_id")
 	private AmentityCategory amentityCategory;
 
@@ -71,6 +71,5 @@ public class Amentity extends BaseEntity {
 				&& Objects.equals(iconImage, other.iconImage) && Objects.equals(name, other.name)
 				&& prominent == other.prominent && safe == other.safe;
 	}
-	
-	
+
 }

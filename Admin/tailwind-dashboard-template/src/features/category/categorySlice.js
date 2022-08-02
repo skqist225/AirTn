@@ -12,8 +12,11 @@ export const fetchCategories = createAsyncThunk(
 );
 
 const initialState = {
-    loading: true,
-    categories: [],
+    listing: {
+        loading: true,
+        categories: [],
+        totalElements: 0,
+    },
 };
 
 const roomSlice = createSlice({
@@ -24,13 +27,14 @@ const roomSlice = createSlice({
         builder
             .addCase(fetchCategories.fulfilled, (state, { payload }) => {
                 state.loading = false;
-                state.categories = payload?.data;
+                state.listing.categories = payload?.data;
+                state.listing.totalElements = payload?.data.length;
             })
             .addCase(fetchCategories.pending, state => {
-                state.loading = true;
+                state.listing.loading = true;
             })
-            .addCase(fetchCategories.rejected, (state, { payload }) => {
-                state.loading = false;
+            .addCase(fetchCategories.rejected, (state, _) => {
+                state.listing.loading = false;
             });
     },
 });

@@ -15,6 +15,18 @@ export const fetchUsers = createAsyncThunk(
     }
 );
 
+export const fetchUser = createAsyncThunk(
+    "user/fetchUser",
+    async (id, { dispatch, getState, rejectWithValue }) => {
+        try {
+            const { data } = await api.get(`/admin/users/${id}`);
+            console.log(data);
+
+            return { data };
+        } catch (error) {}
+    }
+);
+
 export const fetchWishlistsIDsOfCurrentUser = createAsyncThunk(
     "user/fetchWishlistsIDsOfCurrentUser",
     async (_, { dispatch, getState, rejectWithValue }) => {
@@ -98,6 +110,10 @@ const initialState = {
         totalElements: 0,
         totalPages: 0,
     },
+    get: {
+        loading: true,
+        user: {},
+    },
 };
 
 const userSlice = createSlice({
@@ -115,6 +131,10 @@ const userSlice = createSlice({
                 state.listing.users = payload.users;
                 state.listing.totalElements = payload.totalElements;
                 state.listing.totalPages = payload.totalPages;
+            })
+            .addCase(fetchUser.fulfilled, (state, { payload }) => {
+                state.get.loading = false;
+                state.get.user = payload.data;
             })
             .addCase(fetchWishlistsIDsOfCurrentUser.pending, (state, { payload }) => {
                 state.wishlistsIDsFetching = true;

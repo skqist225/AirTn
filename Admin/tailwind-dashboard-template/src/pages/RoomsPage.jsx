@@ -122,7 +122,7 @@ const RoomsPage = () => {
             render: rowData => (
                 <div>
                     <Stack spacing={2} direction='row'>
-                        <Link to={`/room/${rowData.id}`}>
+                        <Link to={`/rooms/${rowData.id}`}>
                             <Button variant='text' onClick={handleView}>
                                 <VisibilityIcon />
                             </Button>

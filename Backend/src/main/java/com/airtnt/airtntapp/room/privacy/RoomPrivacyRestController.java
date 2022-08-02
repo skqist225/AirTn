@@ -22,4 +22,9 @@ public class RoomPrivacyRestController {
     public ResponseEntity<StandardJSONResponse<List<RoomPrivacy>>> getRoomPrivacies() {
         return new OkResponse<List<RoomPrivacy>>(roomPrivacyService.listAll()).response();
     }
+
+    @GetMapping("/admin/room-privacy")
+    public ResponseEntity<StandardJSONResponse<List<RoomPrivacy>>> getRoomAdminPrivacies() {
+        return new OkResponse<List<RoomPrivacy>>(roomPrivacyService.listAll()).response();
+    }
 }

@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk, isAnyOf } from "@reduxjs/toolkit";
 import api from "../../axios";
-import { RootState } from "../../store";
-import IAmenity from "../../types/type_Amenity";
 
 export const fetchAmenities = createAsyncThunk(
     "amenity/fetchAmenities",
@@ -13,14 +11,12 @@ export const fetchAmenities = createAsyncThunk(
     }
 );
 
-type AmenityState = {
-    amenities: IAmenity[];
-    loading: boolean;
-};
-
-const initialState: AmenityState = {
-    amenities: [],
-    loading: true,
+const initialState = {
+    listing: {
+        loading: false,
+        amenities: [],
+        totalElements: 0,
+    },
 };
 
 const amenitySlice = createSlice({
@@ -30,17 +26,18 @@ const amenitySlice = createSlice({
     extraReducers: builder => {
         builder
             .addCase(fetchAmenities.fulfilled, (state, { payload }) => {
-                state.loading = false;
-                state.amenities = payload?.data;
+                state.listing.loading = false;
+                state.listing.amenities = payload?.data;
+                state.listing.totalElements = payload?.data.length;
             })
             .addMatcher(isAnyOf(fetchAmenities.pending), state => {
-                state.loading = true;
+                state.listing.loading = true;
             })
             .addMatcher(isAnyOf(fetchAmenities.rejected), (state, { payload }) => {
-                state.loading = false;
+                state.listing.loading = false;
             });
     },
 });
 
-export const amenityState = (state: RootState) => state.amenity;
+export const amenityState = state => state.amenity;
 export default amenitySlice.reducer;

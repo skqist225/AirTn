@@ -117,6 +117,10 @@ public class User extends BaseEntity {
 	@Column(name = "phone_verified", columnDefinition = "boolean default false")
 	private boolean phoneVerified = false;
 
+	@Builder.Default
+	@Column(name = "identity_verified", columnDefinition = "boolean default false")
+	private boolean identityVerified = false;
+
 	@Column(length = 1024)
 	private String about;
 

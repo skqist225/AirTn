@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-public class AmentityRestController {
+public class AmenityRestController {
 
     @Autowired
     private AmentityService amentityService;

@@ -77,7 +77,7 @@ const UsersPage = () => {
             render: rowData => (
                 <div>
                     <Stack spacing={2} direction='row'>
-                        <Link to={`/room/${rowData.id}`}>
+                        <Link to={`/users/${rowData.id}`}>
                             <Button variant='text' onClick={handleView}>
                                 <VisibilityIcon />
                             </Button>

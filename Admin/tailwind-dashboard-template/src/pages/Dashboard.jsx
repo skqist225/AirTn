@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import Sidebar from "../partials/Sidebar";
 import Header from "../partials/Header";
 import WelcomeBanner from "../partials/dashboard/WelcomeBanner";
@@ -19,13 +18,16 @@ import DashboardCard10 from "../partials/dashboard/DashboardCard10";
 import DashboardCard11 from "../partials/dashboard/DashboardCard11";
 import DashboardCard12 from "../partials/dashboard/DashboardCard12";
 import DashboardCard13 from "../partials/dashboard/DashboardCard13";
-import { useDispatch, useSelector } from "react-redux";
-import { RoomsPage, BookingsPage, UsersPage } from ".";
+import { useDispatch } from "react-redux";
+import { RoomsPage, BookingsPage, UsersPage, CategoriesPage, AmenitiesPage, RulesPage, PrivaciesPage } from ".";
 import { useLocation } from "react-router-dom";
 import { fetchRooms } from "../features/room/roomSlice";
 import { fetchBookings } from "../features/booking/bookingSlice";
 import { fetchUsers } from "../features/user/userSlice";
 import { fetchCategories } from "../features/category/categorySlice";
+import { fetchAmenities } from "../features/amenity/amenitySlice";
+import { fetchRules } from "../features/rule/ruleSlice";
+import { fetchPrivacies } from "../features/privacy/privacySlice";
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,9 +44,22 @@ function Dashboard() {
       }
       case "/categories": {
         dispatch(fetchCategories());
+        break;
+      }
+      case "/amenities": {
+        dispatch(fetchAmenities());
+        break;
+      }
+      case "/rules": {
+        dispatch(fetchRules());
+        break;
       }
       case "/bookings": {
         dispatch(fetchBookings(1));
+        break;
+      }
+      case "/privacies": {
+        dispatch(fetchPrivacies());
         break;
       }
       case "/users": {
@@ -77,10 +92,29 @@ function Dashboard() {
                 <RoomsPage />
               </>
             )}
-
             {pathname === "/bookings" && (
               <>
                 <BookingsPage />
+              </>
+            )}
+            {pathname === "/categories" && (
+              <>
+                <CategoriesPage />
+              </>
+            )}
+            {pathname === "/amenities" && (
+              <>
+                <AmenitiesPage />
+              </>
+            )}
+            {pathname === "/rules" && (
+              <>
+                <RulesPage />
+              </>
+            )}
+            {pathname === "/privacies" && (
+              <>
+                <PrivaciesPage />
               </>
             )}
 

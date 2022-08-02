@@ -50,7 +50,7 @@ const RoomDetails = () => {
         <>
             {/* <Header excludeBecomeHostAndNavigationHeader={false} includeMiddle={false} /> */}
             {room && !loading && (
-                <main>
+                <main id='roomDetailsPage'>
                     <div id='rdt__header--container'>
                         <h1 className='rdt__header--name'>{room.name}</h1>
                         <LocationAndLikeShare room={room} />

@@ -1,33 +1,37 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { combineReducers } from "redux";
 import {
-    // countrySlice,
+    amenitySlice,
+    // authSlice,
+    bookingSlice,
     categorySlice,
+    // citySlice,
+    // countrySlice,
+    privacySlice,
+    ruleSlice,
     roomSlice,
     userSlice,
     // stateSlice,
-    // citySlice,
-    // amenitySlice,
-    bookingSlice,
     // reviewSlice,
     // earningSlice,
     // inboxSlice,
-    // authSlice,
 } from "./features";
 
 const rootReducer = combineReducers({
-    room: roomSlice,
-    category: categorySlice,
-    // country: countrySlice,
-    // state: stateSlice,
-    // city: citySlice,
-    user: userSlice,
-    // amenity: amenitySlice,
+    amenity: amenitySlice,
+    // auth: authSlice,
     booking: bookingSlice,
-    // review: reviewSlice,
+    category: categorySlice,
+    // city: citySlice,
+    // country: countrySlice,
     // earning: earningSlice,
     // inbox: inboxSlice,
-    // auth: authSlice,
+    privacy: privacySlice,
+    rule: ruleSlice,
+    room: roomSlice,
+    // review: reviewSlice,
+    user: userSlice,
+    // state: stateSlice,
 });
 
 const localUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
@@ -55,6 +59,10 @@ const store = configureStore({
                 loading: true,
                 totalElements: 0,
                 totalPages: 0,
+            },
+            get: {
+                loading: true,
+                user: {},
             },
         },
     },
