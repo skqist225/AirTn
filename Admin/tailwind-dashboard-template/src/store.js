@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { combineReducers } from "redux";
 import {
     amenitySlice,
-    // authSlice,
+    authSlice,
     bookingSlice,
     categorySlice,
     // citySlice,
@@ -19,7 +19,7 @@ import {
 
 const rootReducer = combineReducers({
     amenity: amenitySlice,
-    // auth: authSlice,
+    auth: authSlice,
     booking: bookingSlice,
     category: categorySlice,
     // city: citySlice,
@@ -63,6 +63,16 @@ const store = configureStore({
             get: {
                 loading: true,
                 user: {},
+            },
+            addUserAction: {
+                loading: true,
+                successMessage: "",
+                errorMessage: "",
+            },
+            deleteUserAction: {
+                loading: true,
+                successMessage: null,
+                errorMessage: null,
             },
         },
     },

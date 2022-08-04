@@ -22,6 +22,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.Future;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
@@ -69,7 +70,6 @@ public class User extends BaseEntity {
 	@Column(length = 10, nullable = false)
 	private Sex sex;
 
-	@Past(message = "Không chọn ngày lớn hơn hiện tại.")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate birthday;
@@ -191,13 +191,14 @@ public class User extends BaseEntity {
 
 	@Transient
 	@JsonIgnore
-	public static User buildUser(RegisterDTO registerDTO) {
+	public static User build(RegisterDTO registerDTO) {
 		Sex sex = registerDTO.getSex().equals("MALE") ? Sex.MALE
 				: (registerDTO.getSex().equals("FEMALE") ? Sex.FEMALE : Sex.OTHER);
 
 		return User.builder().firstName(registerDTO.getFirstName()).lastName(registerDTO.getLastName())
 				.email(registerDTO.getEmail()).password(registerDTO.getPassword()).sex(sex)
-				.birthday(registerDTO.getBirthday()).phoneNumber(registerDTO.getPhoneNumber()).build();
+				.birthday(registerDTO.getBirthday()).phoneNumber(registerDTO.getPhoneNumber()).role(new Role(1))
+				.build();
 	}
 
 	@Transient

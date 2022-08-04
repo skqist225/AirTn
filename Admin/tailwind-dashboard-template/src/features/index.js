@@ -1,5 +1,5 @@
 export { default as amenitySlice } from "./amenity/amenitySlice";
-// export { default as authSlice } from "./auth/authSlice";
+export { default as authSlice } from "./auth/authSlice";
 export { default as categorySlice } from "./category/categorySlice";
 // export { default as citySlice } from "./address/citySlice";
 // export { default as countrySlice } from "./country/countrySlice";

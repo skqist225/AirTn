@@ -113,13 +113,13 @@ public class AuthRestController {
 
 		ArrayNode arrays = objectMapper.createArrayNode();
 		try {
-			boolean isDuplicatedEmail = userService.isEmailUnique(null, postUser.getEmail());
-			if (!isDuplicatedEmail)
+			boolean isDuplicatedEmail = userService.isEmailDuplicated(postUser.getEmail());
+			if (isDuplicatedEmail)
 				return new BadResponse<User>("Email has already been taken").response();
 
 			User savedUser;
 			try {
-				savedUser = userService.save(User.buildUser(postUser));
+				savedUser = userService.save(User.build(postUser));
 				return new OkResponse<User>(savedUser).response();
 			} catch (DuplicatedEntryPhoneNumberExeption e) {
 				return new BadResponse<User>(e.getMessage()).response();

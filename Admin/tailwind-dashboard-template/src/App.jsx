@@ -11,7 +11,7 @@ import './charts/ChartjsConfig';
 
 // Import pages
 import Dashboard from './pages/Dashboard';
-import { UserDetailsPage, RoomDetailsPage } from './pages';
+import { UserDetailsPage, RoomDetailsPage, AddUserPage, EditUserPage } from './pages';
 
 function App() {
 
@@ -32,6 +32,8 @@ function App() {
         <Route path="/bookings" element={<Dashboard />} />
         <Route path="/users" element={<Dashboard />} />
         <Route path="/users/:userid" element={<UserDetailsPage />} />
+        <Route path="/add/user" element={<AddUserPage />} />
+        <Route path="/edit/user/:userid" element={<EditUserPage />} />
         <Route path="/categories" element={<Dashboard />} />
         <Route path="/amenities" element={<Dashboard />} />
         <Route path="/rules" element={<Dashboard />} />

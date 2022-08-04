@@ -27,6 +27,32 @@ export const fetchUser = createAsyncThunk(
     }
 );
 
+export const addUser = createAsyncThunk(
+    "user/addUser",
+    async (user, { dispatch, rejectWithValue }) => {
+        try {
+            const { data } = await api.post("/auth/register", user);
+
+            return { data };
+        } catch ({ data: { error } }) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
+export const deleteUser = createAsyncThunk(
+    "user/deleteUser",
+    async (id, { dispatch, rejectWithValue }) => {
+        try {
+            const { data } = await api.delete(`/admin/users/${id}`);
+
+            return { data };
+        } catch ({ data: { error } }) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
 export const fetchWishlistsIDsOfCurrentUser = createAsyncThunk(
     "user/fetchWishlistsIDsOfCurrentUser",
     async (_, { dispatch, getState, rejectWithValue }) => {
@@ -114,6 +140,16 @@ const initialState = {
         loading: true,
         user: {},
     },
+    addUserAction: {
+        loading: true,
+        successMessage: null,
+        errorMessage: null,
+    },
+    deleteUserAction: {
+        loading: true,
+        successMessage: null,
+        errorMessage: null,
+    },
 };
 
 const userSlice = createSlice({
@@ -122,6 +158,11 @@ const userSlice = createSlice({
     reducers: {
         setUser: (state, { payload }) => {
             state.user = payload;
+        },
+        clearAddUserAction: (state, { payload }) => {
+            state.addUserAction.loading = true;
+            state.addUserAction.successMessage = null;
+            state.addUserAction.errorMessage = null;
         },
     },
     extraReducers: builder => {
@@ -135,6 +176,32 @@ const userSlice = createSlice({
             .addCase(fetchUser.fulfilled, (state, { payload }) => {
                 state.get.loading = false;
                 state.get.user = payload.data;
+            })
+            .addCase(addUser.pending, (state, { payload }) => {
+                state.loading = true;
+                state.addUserAction.successMessage = null;
+                state.addUserAction.errorMessage = null;
+            })
+            .addCase(addUser.fulfilled, (state, { payload }) => {
+                state.loading = false;
+                if (payload.data) {
+                    state.addUserAction.successMessage = "Add User Successfully";
+                }
+            })
+            .addCase(deleteUser.pending, (state, { payload }) => {
+                state.loading = true;
+                state.deleteUserAction.successMessage = null;
+                state.deleteUserAction.errorMessage = null;
+            })
+            .addCase(deleteUser.fulfilled, (state, { payload }) => {
+                state.loading = false;
+                if (payload.data) {
+                    state.deleteUserAction.successMessage = "Delete User Successfully";
+                }
+            })
+            .addCase(addUser.rejected, (state, { payload }) => {
+                state.loading = false;
+                state.addUserAction.errorMessage = payload;
             })
             .addCase(fetchWishlistsIDsOfCurrentUser.pending, (state, { payload }) => {
                 state.wishlistsIDsFetching = true;
@@ -170,6 +237,6 @@ const userSlice = createSlice({
     },
 });
 
-export const { setUser } = userSlice.actions;
+export const { setUser, clearAddUserAction } = userSlice.actions;
 export const userState = state => state.user;
 export default userSlice.reducer;

@@ -2,10 +2,12 @@ package com.airtnt.airtntapp.user;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.config.ConfigData.Option;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,23 +61,34 @@ public class UserService {
 	}
 
 	public boolean isEmailUnique(Integer id, String email) {
-		User userByEmail = userRepository.findByEmail(email).get();
+		Optional<User> user = userRepository.findByEmail(email);
 
-		if (userByEmail == null)
-			return true;
+		if (user.isPresent()) {
+			return false;
+		}
 
 		boolean isCreatingNew = (id == null);
 
 		if (isCreatingNew) { // create
-			if (userByEmail != null)
+			if (user != null)
 				return false;
 		} else { // edit
-			if (userByEmail.getId() != id) {
+			if (user.get().getId() != id) {
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	public boolean isEmailDuplicated(String email) {
+		Optional<User> user = userRepository.findByEmail(email);
+
+		if (user.isPresent()) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public User findByEmail(String email) throws UserNotFoundException {

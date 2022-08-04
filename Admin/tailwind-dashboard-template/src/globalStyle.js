@@ -171,6 +171,19 @@ const GlobalStyle = createGlobalStyle`
         border: none;
         outline: none;
     }
+
+    [type='text']:focus {
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+        --tw-ring-inset: var(--tw-empty,/*!*/ /*!*/);
+        --tw-ring-offset-width: 0px;
+        --tw-ring-offset-color: #fff;
+        --tw-ring-color: #2563eb;
+        --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+        --tw-ring-shadow: none !important;
+        box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+        border-color: none !important;
+    }
 `;
 
 export const MainButton = styled.button`
