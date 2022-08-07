@@ -3,16 +3,16 @@ import { tableIcons } from "../utils/tableIcon";
 import { getImage } from "../helpers";
 import MyNumberForMat from "../utils/MyNumberFormat";
 import Stack from "@mui/material/Stack";
-import Button from "@mui/material/Button";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import TablePagination from "@material-ui/core/TablePagination";
 import { Link } from "react-router-dom";
-import "../css/page/rooms.css";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchRooms } from "../features/room/roomSlice";
 import { useEffect, useState } from "react";
+import AddIcon from "@mui/icons-material/Add";
+import { Fab } from "@material-ui/core";
+import { MyButton } from "../components/common";
+
+import "../css/page/rooms.css";
 
 const RoomsPage = () => {
     const dispatch = useDispatch();
@@ -22,11 +22,11 @@ const RoomsPage = () => {
         hosting: { rooms, totalRecords, totalPages, loading },
     } = useSelector(state => state.room);
 
-    const handleView = () => { };
+    const handleView = () => {};
 
-    const handleEdit = () => { };
+    const handleEdit = () => {};
 
-    const handleDelete = () => { };
+    const handleDelete = () => {};
 
     const handlePageChange = (e, pn) => {
         dispatch(fetchRooms(pn + 1));
@@ -123,16 +123,12 @@ const RoomsPage = () => {
                 <div>
                     <Stack spacing={2} direction='row'>
                         <Link to={`/rooms/${rowData.id}`}>
-                            <Button variant='text' onClick={handleView}>
-                                <VisibilityIcon />
-                            </Button>
+                            <MyButton type='view' />
                         </Link>
-                        <Button variant='contained' onClick={handleEdit}>
-                            <EditIcon />
-                        </Button>
-                        <Button variant='outlined' color='error' onClick={handleDelete}>
-                            <DeleteIcon />
-                        </Button>
+                        <Link to={`/rooms/${rowData.id}/edit`}>
+                            <MyButton type='edit' />
+                        </Link>
+                        <MyButton type='delete' onClick={handleDelete} />
                     </Stack>
                 </div>
             ),
@@ -144,7 +140,20 @@ const RoomsPage = () => {
             <MaterialTable
                 title={
                     <>
-                        Total Records: <span>{totalRecords}</span>
+                        <div className='h-20 flex items-center'>
+                            <div className='mr-5'>
+                                Total Records:{" "}
+                                <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                                    {totalRecords}
+                                </span>
+                            </div>
+                            <Link to={"/add/room"}>
+                                <Fab variant='extended' color='primary' aria-label='add'>
+                                    <AddIcon sx={{ mr: 1 }} />
+                                    Add Room
+                                </Fab>
+                            </Link>
+                        </div>
                     </>
                 }
                 icons={tableIcons}
@@ -164,7 +173,7 @@ const RoomsPage = () => {
                 components={{
                     Pagination: _ => (
                         <TablePagination
-                            onChangePage={handlePageChange}
+                            onPageChange={handlePageChange}
                             rowsPerPage={10}
                             page={page}
                             count={totalRecords}

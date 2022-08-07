@@ -1,6 +1,7 @@
 package com.airtnt.airtntapp.user;
 
 import java.io.IOException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +19,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.airtnt.airtntapp.exception.UserNotFoundException;
+import com.airtnt.airtntapp.exception.VerifiedUserException;
 import com.airtnt.airtntapp.response.StandardJSONResponse;
 import com.airtnt.airtntapp.response.error.BadResponse;
 import com.airtnt.airtntapp.response.success.OkResponse;
 import com.airtnt.airtntapp.user.dto.UpdateUserDTO;
 import com.airtnt.airtntapp.user.dto.UserListDTO;
 import com.airtnt.airtntapp.user.dto.UserListResponse;
+import com.airtnt.entity.City;
+import com.airtnt.entity.Country;
 import com.airtnt.entity.Sex;
+import com.airtnt.entity.State;
 import com.airtnt.entity.User;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -80,7 +85,6 @@ public class AdminUserRestController {
     public ResponseEntity<StandardJSONResponse<User>> getUser(@PathVariable(value = "id") Integer id) {
         try {
             User user = userService.findById(id);
-            System.out.println(user.getOwnedRooms().size());
 
             return new OkResponse<User>(user).response();
         } catch (UserNotFoundException e) {
@@ -91,12 +95,11 @@ public class AdminUserRestController {
     @DeleteMapping("users/{id}")
     public ResponseEntity<StandardJSONResponse<Boolean>> deleteUser(@PathVariable(value = "id") Integer id) {
         try {
-            if (userService.deleteUser(id)) {
-                return new OkResponse<Boolean>(true).response();
-            }
+            userService.deleteUser(id);
 
-            return new BadResponse<Boolean>("Can not delete verified identity user").response();
-        } catch (UserNotFoundException e) {
+            return new OkResponse<Boolean>(true).response();
+        } catch (UserNotFoundException | SQLIntegrityConstraintViolationException | VerifiedUserException e) {
+            System.out.println(e.getMessage());
             return new BadResponse<Boolean>(e.getMessage()).response();
         }
     }
@@ -126,10 +129,23 @@ public class AdminUserRestController {
             LocalDate birthd = LocalDate.parse(updateUserDTO.getBirthday());
             user.setBirthday(birthd);
 
-            User savedAvatarUser = new UserORestController().updateAvatar(user, updateUserDTO.getAvatar(), false,
+            new UserORestController().updateAvatar(user, updateUserDTO.getAvatar(), false,
                     environment);
 
-            return new OkResponse<User>(userService.saveUser(savedAvatarUser)).response();
+            if (updateUserDTO.getCountry() != null) {
+                user.getAddress().setCountry(new Country(updateUserDTO.getCountry()));
+            }
+            if (updateUserDTO.getState() != null) {
+                user.getAddress().setState(new State(updateUserDTO.getState()));
+            }
+            if (updateUserDTO.getCity() != null) {
+                user.getAddress().setCity(new City(updateUserDTO.getCity()));
+            }
+            if (updateUserDTO.getStreet() != null) {
+                user.getAddress().setStreet(updateUserDTO.getStreet());
+            }
+
+            return new OkResponse<User>(userService.saveUser(user)).response();
         } catch (UserNotFoundException e) {
             return new BadResponse<User>(e.getMessage()).response();
         }

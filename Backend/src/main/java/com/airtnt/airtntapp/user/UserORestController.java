@@ -52,7 +52,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -419,18 +418,6 @@ public class UserORestController {
 		List<BookedRoomDTO> bookings = bookingService.getBookedRoomsByUser(user.getId(), query);
 
 		return new OkResponse<List<BookedRoomDTO>>(bookings).response();
-	}
-
-	@DeleteMapping("{userid}")
-	public ResponseEntity<StandardJSONResponse<String>> deleteUser(@PathVariable("userid") String userId)
-			throws NumberFormatException, UserNotFoundException {
-		boolean isDeleteSucceeded = userService.deleteUser(Integer.parseInt(userId));
-
-		if (isDeleteSucceeded) {
-			return new OkResponse<String>("Delete user successfully").response();
-		} else {
-			return new BadResponse<String>("Can not delete user").response();
-		}
 	}
 
 	@GetMapping("inbox")

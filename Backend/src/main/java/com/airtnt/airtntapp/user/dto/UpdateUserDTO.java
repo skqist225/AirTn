@@ -21,4 +21,8 @@ public class UpdateUserDTO {
     private String about;
     private String birthday;
     private MultipartFile avatar;
+    private Integer country;
+    private Integer state;
+    private Integer city;
+    private String street;
 }

@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import Header from "../partials/Header";
 import Sidebar from "../partials/Sidebar";
-import { MyTextField } from "../components/common";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -25,18 +24,22 @@ import {
     Typography,
 } from "@mui/material";
 import Toast from "../components/notify/Toast";
-import { addUser, fetchUser, updateUser, userState } from "../features/user/userSlice";
+import { fetchUser, updateUser, userState } from "../features/user/userSlice";
 import { callToast, getImage } from "../helpers";
 import $ from "jquery";
 import { useParams } from "react-router-dom";
 import { Image } from "../globalStyle";
 import { authState, checkPhoneNumber, checkEmail } from "../features/auth/authSlice";
 import { AddressEdit } from "../components";
-import { useForm } from "react-hook-form";
 
 const AddUserPage = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [endSetting, setEndSetting] = useState(false);
+    const [country, setCountry] = useState("");
+    const [state, setState] = useState("");
+    const [city, setCity] = useState("");
+    const [street, setStreet] = useState("");
     const [myErrors, setMyErrors] = useState({
         phoneNumber: "",
         birthday: "",
@@ -77,8 +80,6 @@ const AddUserPage = () => {
         }
     }, [userid]);
 
-    const { handleSubmit, register } = useForm();
-
     useEffect(() => {
         if (user) {
             setFieldValues({
@@ -91,6 +92,24 @@ const AddUserPage = () => {
             });
             setSex(user.sex);
             setBirthday(new Date(user.birthday));
+
+            const address = user.addressDetails;
+            if (address) {
+                if (address.country) {
+                    setCountry(address.country.id);
+                }
+                if (address.state) {
+                    setState(address.state.id);
+                }
+                if (address.city) {
+                    setCity(address.city.id);
+                }
+                if (address.street) {
+                    setStreet(address.street);
+                }
+            }
+
+            setEndSetting(true);
         }
     }, [user]);
 
@@ -172,6 +191,18 @@ const AddUserPage = () => {
         if (avatar) {
             updateObject["avatar"] = avatar;
         }
+        if (country) {
+            updateObject["country"] = parseInt(country);
+        }
+        if (state) {
+            updateObject["state"] = parseInt(state);
+        }
+        if (city) {
+            updateObject["city"] = parseInt(city);
+        }
+        if (street) {
+            updateObject["street"] = street;
+        }
 
         console.log(updateObject);
         const formData = new FormData();
@@ -223,8 +254,6 @@ const AddUserPage = () => {
             dispatch(checkEmail(value));
         }
     };
-
-    console.log(user.addressDetails);
 
     return (
         <>
@@ -414,26 +443,16 @@ const AddUserPage = () => {
                                                 </FormControl>
                                             </div>
                                         </>
-                                        {user && user.addressDetails && (
+                                        {endSetting && (
                                             <AddressEdit
-                                                register={register}
-                                                address={user.addressDetails}
-                                                countryDefaultValue={
-                                                    user.addressDetails &&
-                                                    user.addressDetails.country
-                                                        ? user.addressDetails.country.id
-                                                        : 216
-                                                }
-                                                stateDefaultValue={
-                                                    user.addressDetails && user.addressDetails.state
-                                                        ? user.addressDetails.state.id
-                                                        : 120
-                                                }
-                                                cityDefaultValue={
-                                                    user.addressDetails && user.addressDetails.city
-                                                        ? user.addressDetails.city.id
-                                                        : 8618
-                                                }
+                                                country={country}
+                                                state={state}
+                                                city={city}
+                                                street={street}
+                                                setCountry={setCountry}
+                                                setState={setState}
+                                                setCity={setCity}
+                                                setStreet={setStreet}
                                             />
                                         )}
                                         <div>

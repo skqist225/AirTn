@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import Header from "../partials/Header";
 import Sidebar from "../partials/Sidebar";
-import { MyTextField } from "../components/common";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -19,19 +18,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import {
-    Divider,
-    IconButton,
-    InputAdornment,
-    OutlinedInput,
-    TextareaAutosize,
-    Typography,
-} from "@mui/material";
+import { Divider, IconButton, InputAdornment, OutlinedInput, Typography } from "@mui/material";
 import Toast from "../components/notify/Toast";
 import { addUser, fetchUser, userState } from "../features/user/userSlice";
 import { callToast } from "../helpers";
 import $ from "jquery";
-import { useParams } from "react-router-dom";
 
 const schema = yup
     .object({
@@ -72,7 +63,7 @@ const AddUserPage = () => {
         resolver: yupResolver(schema),
     });
 
-    console.log(errors)
+    console.log(errors);
 
     const onSubmit = (data, e) => {
         setMyErrors({
@@ -204,7 +195,7 @@ const AddUserPage = () => {
                                                         ? errors?.email.message
                                                         : myErrors.email
                                                 }
-                                                autoComplete="nope"
+                                                autoComplete='nope'
                                                 defaultValue=''
                                                 required
                                             />
@@ -235,7 +226,7 @@ const AddUserPage = () => {
                                                     </InputAdornment>
                                                 }
                                                 label='Password'
-                                                autoComplete="new-password"
+                                                autoComplete='new-password'
                                                 {...register("password")}
                                             />
                                         </FormControl>

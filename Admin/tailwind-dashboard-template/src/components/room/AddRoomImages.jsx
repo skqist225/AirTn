@@ -6,41 +6,39 @@ import $ from "jquery";
 import "./css/room_images_main_content.css";
 import { useSelector } from "react-redux";
 import { toast, ToastContainer } from "react-toastify";
-import { addEmptyImage } from "../../pages/script/manage_photos";
+import { addEmptyImage } from "./script/manage_photos";
 import { userState } from "../../features/user/userSlice";
 
-interface IPropertyRoomImagesMainContentProps {}
-
-const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = () => {
+let photos = [];
+const AddRoomImages = () => {
     let fileReaderResult = new Map();
     let isUploaded = false;
 
     const { user } = useSelector(userState);
-    let photos: File[] = [];
 
     useEffect(() => {
-        const uploadPhotos: JQuery<HTMLInputElement> = $("#uploadPhotos");
+        const uploadPhotos = $("#uploadPhotos");
         $("#triggerUploadPhotosInput").on("click", function (e) {
             e.preventDefault();
             uploadPhotos.trigger("click");
         });
 
         uploadPhotos.on("change", function () {
-            readURL(this.files as any, uploadPhotos);
+            readURL(this.files, uploadPhotos);
         });
 
         restoreRoomImages(uploadPhotos);
     }, []);
-    async function restoreRoomImages(uploadPhotos: JQuery<HTMLInputElement>) {
+    async function restoreRoomImages(uploadPhotos) {
         if (localStorage.getItem("room")) {
-            const { roomImages, username } = JSON.parse(localStorage.getItem("room")!);
+            const { roomImages, username } = JSON.parse(localStorage.getItem("room"));
             if (roomImages && roomImages.length >= 5) {
                 isUploaded = true;
             }
 
             const formData = new FormData();
             formData.set("username", username);
-            roomImages.forEach((image: string) => formData.append("roomImages", image));
+            roomImages.forEach(image => formData.append("roomImages", image));
 
             const data = await axios.post(`/become-a-host/get-upload-photos`, formData, {
                 headers: {
@@ -48,7 +46,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
                 },
             });
 
-            const filesArr = (data as any).roomImages.map((e: any) => {
+            const filesArr = data.roomImages.map(e => {
                 var array = new Uint8Array(e.bytes);
                 const blob = new Blob([array], { type: "image/jpeg" });
                 return new File([blob], e.name, {
@@ -60,12 +58,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         }
     }
 
-    function previewImage(
-        file: File,
-        parent: JQuery<HTMLElement>,
-        thumbnail = false,
-        modifier: number
-    ) {
+    function previewImage(file, parent, thumbnail = false, modifier) {
         const defer = $.Deferred();
         const fileReader = new FileReader();
         const photoAction = $(`
@@ -88,7 +81,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         </div>
     `);
 
-        fileReader.onload = function (e: any) {
+        fileReader.onload = function (e) {
             if (!thumbnail) {
                 const div = $(`
                 <div class="photo-cover">
@@ -157,7 +150,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         return defer.promise();
     }
 
-    function doPreviewImage(files: File[] | FileList, subImagesContainer: JQuery<HTMLElement>) {
+    function doPreviewImage(files, subImagesContainer) {
         //first image for thumbnail
         const defer = $.Deferred();
 
@@ -182,10 +175,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         return defer.promise();
     }
 
-    function doPreviewImageSecondTime(
-        files: File[] | FileList,
-        subImagesContainer: JQuery<HTMLElement>
-    ) {
+    function doPreviewImageSecondTime(files, subImagesContainer) {
         const defer = $.Deferred();
         let count = 0;
 
@@ -217,7 +207,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         return defer.promise();
     }
 
-    function readURL(files: File[] | FileList, uploadPhotos: JQuery<HTMLInputElement>) {
+    function readURL(files, uploadPhotos) {
         const subImagesContainer = $("#subImages");
 
         if (photos.length === 0) {
@@ -247,7 +237,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
 
     // function addEmptyImage(
     //     files: File[] | FileList,
-    //     uploadPhotos: JQuery<HTMLInputElement>,
+    //     uploadPhotos,
     //     subImagesContainer: JQuery<HTMLElement>
     // ) {
     //     if (files.length - 1 < 4) {
@@ -289,20 +279,20 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
     //     }
     // }
 
-    function displayAction(self: JQuery<HTMLElement>) {
+    function displayAction(self) {
         const sibling = self.siblings(".photo-action__div-hidden");
 
         if (sibling.hasClass("active")) sibling.removeClass("active");
         else sibling.addClass("active");
     }
 
-    function swapPosition(firstEl: any, secondEl: any) {
+    function swapPosition(firstEl, secondEl) {
         const temp = photos[firstEl];
         photos[firstEl] = photos[secondEl];
         photos[secondEl] = temp;
     }
 
-    function changePreviewImage(firstEl: any, secondEl: any) {
+    function changePreviewImage(firstEl, secondEl) {
         const fr1 = fileReaderResult.get(firstEl);
         const fr2 = fileReaderResult.get(secondEl);
 
@@ -332,20 +322,20 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         fileReaderResult.set(secondEl, fr1);
     }
 
-    function closeAction(index: number) {
+    function closeAction(index) {
         const _self = $(`button[data-index="${index}"]`);
 
         const sibling = _self.siblings(".photo-action__div-hidden");
         if (sibling.hasClass("active")) sibling.removeClass("active");
     }
 
-    function makeMainImage(index: number) {
+    function makeMainImage(index) {
         swapPosition(0, index);
         changePreviewImage(0, index);
         closeAction(index);
     }
 
-    function moveImageBackward(index: number) {
+    function moveImageBackward(index) {
         if (index === 1) {
             makeMainImage(index);
         } else {
@@ -355,7 +345,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         }
     }
 
-    function moveImageForward(index: number) {
+    function moveImageForward(index) {
         if (index === 0) {
             makeMainImage(index + 1);
         } else {
@@ -365,7 +355,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         }
     }
 
-    function deleteImage(index: number) {
+    function deleteImage(index) {
         if (photos.length === 1) {
             // if just one image left
             photos = [];
@@ -382,7 +372,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
 
         console.log(photos[photos.length - 1]);
         if (localStorage.getItem("room")) {
-            const room = JSON.parse(localStorage.getItem("room")!);
+            const room = JSON.parse(localStorage.getItem("room"));
             if (room.roomImages && room.roomImages.length) {
                 delete room.roomImages[index];
                 room.roomImages.length--;
@@ -405,7 +395,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         lastElement.remove();
 
         const subImagesContainer = $("#subImages");
-        const uploadPhotos: JQuery<HTMLInputElement> = $("#uploadPhotos");
+        const uploadPhotos = $("#uploadPhotos");
         let b = 0;
         if (photos.length < 4) {
             $(".singleImageContainer.containerOfImageIcon").length > 2
@@ -421,7 +411,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         }
 
         const formData = new FormData();
-        formData.set("host", user!.email);
+        formData.set("host", user.email);
         photos.forEach(photo => formData.append("photos", photo));
 
         const data = await axios.post(`/become-a-host/upload-room-photos`, formData, {
@@ -429,10 +419,10 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
                 "Content-Type": "multipart/form-data",
             },
         });
-        if ((data.status as any) === "success") {
+        if (data.status === "success") {
             isUploaded = true;
             callToast("success", "Tải ảnh lên thành công");
-            const username2 = (data as any).username;
+            const username2 = data.username;
             let room = {};
             if (!localStorage.getItem("room")) {
                 room = {
@@ -440,7 +430,7 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
                     username: username2,
                 };
             } else {
-                room = JSON.parse(localStorage.getItem("room")!);
+                room = JSON.parse(localStorage.getItem("room"));
                 room = {
                     ...room,
                     roomImages: photos.map(({ name }) => name),
@@ -451,17 +441,17 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
         }
     }
 
-    function dropHandler(e: React.DragEvent<HTMLDivElement>) {
+    function dropHandler(e) {
         e.stopPropagation();
         e.preventDefault();
 
         // FileList object.
         var files = e.dataTransfer.files;
-        const uploadPhotos: JQuery<HTMLInputElement> = $("#uploadPhotos");
+        const uploadPhotos = $("#uploadPhotos");
         readURL(files, uploadPhotos);
     }
 
-    function dragoverHandler(e: React.DragEvent<HTMLDivElement>) {
+    function dragoverHandler(e) {
         e.stopPropagation();
         e.preventDefault();
         // Explicitly show this is a copy.
@@ -547,4 +537,4 @@ const PropertyRoomImagesMainContent: FC<IPropertyRoomImagesMainContentProps> = (
     );
 };
 
-export default PropertyRoomImagesMainContent;
+export default AddRoomImages;

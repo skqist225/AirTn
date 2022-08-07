@@ -1,5 +1,6 @@
 package com.airtnt.airtntapp.user;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -7,7 +8,6 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigData.Option;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.airtnt.airtntapp.country.CountryRepository;
 import com.airtnt.airtntapp.exception.DuplicatedEntryPhoneNumberExeption;
 import com.airtnt.airtntapp.exception.UserNotFoundException;
+import com.airtnt.airtntapp.exception.VerifiedUserException;
 import com.airtnt.entity.Country;
 import com.airtnt.entity.Role;
 import com.airtnt.entity.User;
@@ -168,19 +169,15 @@ public class UserService {
 		userRepository.deleteById(id);
 	}
 
-	public boolean deleteUser(Integer id) throws UserNotFoundException {
-		try {
-			User user = this.findById(id);
+	public void deleteUser(Integer id)
+			throws UserNotFoundException, SQLIntegrityConstraintViolationException, VerifiedUserException {
+		User user = this.findById(id);
 
-			if (user.isIdentityVerified()) {
-				return false;
-			}
-
-			userRepository.deleteById(id);
-			return true;
-		} catch (Exception ex) {
-			return false;
+		if (user.isIdentityVerified()) {
+			throw new VerifiedUserException("Can not delete this verified user");
 		}
+
+		userRepository.deleteById(id);
 	}
 
 	public void updateUserEnabledStatus(Integer id, boolean enabled) {

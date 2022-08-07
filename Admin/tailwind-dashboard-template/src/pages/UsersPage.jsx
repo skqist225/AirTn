@@ -12,10 +12,9 @@ import "../css/page/rooms.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { deleteUser, fetchUsers, userState } from "../features/user/userSlice";
-import { Fab } from "@mui/material";
-import AddIcon from '@mui/icons-material/Add';
-import NavigationIcon from '@mui/icons-material/Navigation';
 import Toast from "../components/notify/Toast";
+import { Image } from "../globalStyle";
+import { MyButton } from "../components/common";
 
 const UsersPage = () => {
     const dispatch = useDispatch();
@@ -23,10 +22,10 @@ const UsersPage = () => {
 
     const {
         listing: { users, totalElements, totalPages, loading },
-        deleteUserAction: { successMessage, errorMessage }
+        deleteUserAction: { successMessage, errorMessage },
     } = useSelector(userState);
 
-    const handleDelete = (id) => {
+    const handleDelete = id => {
         dispatch(deleteUser(id));
     };
 
@@ -37,17 +36,16 @@ const UsersPage = () => {
 
     useEffect(() => {
         if (successMessage) {
-            callToast("success", successMessage)
+            callToast("success", successMessage);
             dispatch(fetchUsers(page + 1));
         }
-    }, [successMessage])
-
+    }, [successMessage]);
 
     useEffect(() => {
         if (errorMessage) {
             callToast("error", errorMessage);
         }
-    }, [errorMessage])
+    }, [errorMessage]);
 
     const roomColumns = [
         {
@@ -80,7 +78,15 @@ const UsersPage = () => {
         {
             title: "Identity Verified",
             field: "identityVerified",
-            render: rowData => <span>{console.log(rowData.identityVerified)}{rowData.identityVerified}</span>,
+            render: rowData => (
+                <div>
+                    {rowData.identityVerified ? (
+                        <Image src={getImage("/svg/identity_verified.svg")} size='20px' />
+                    ) : (
+                        <Image src={getImage("/svg/close2.svg")} size='20px' />
+                    )}
+                </div>
+            ),
         },
         {
             title: "Action",
@@ -89,22 +95,20 @@ const UsersPage = () => {
                 <div>
                     <Stack spacing={2} direction='row'>
                         <Link to={`/users/${rowData.id}`}>
-                            <Button variant='text'>
-                                <VisibilityIcon />
-                            </Button>
+                            <MyButton label='User' type='view' />
                         </Link>
                         <Link to={`/edit/user/${rowData.id}`}>
-                            <Button variant='contained'>
-                                <EditIcon />
-                            </Button>
+                            <MyButton label='User' type='edit' />
                         </Link>
-                        <Button variant='outlined' color='error' onClick={() => {
-                            handleDelete(rowData.id);
-                        }}
+
+                        <MyButton
+                            label='User'
+                            type='delete'
+                            onClick={() => {
+                                handleDelete(rowData.id);
+                            }}
                             disabled={rowData.identityVerified}
-                        >
-                            <DeleteIcon />
-                        </Button>
+                        />
                     </Stack>
                 </div>
             ),
@@ -115,19 +119,14 @@ const UsersPage = () => {
         <>
             <MaterialTable
                 title={
-                    <div className="h-20 flex items-center">
-                        <div className="mr-5">
+                    <div className='h-20 flex items-center'>
+                        <div className='mr-5'>
                             Total Records:{" "}
                             <span style={{ fontSize: "18px", fontWeight: "bold" }}>
                                 {totalElements}
                             </span>
                         </div>
-                        <Link to={"/add/user"}>
-                            <Fab variant="extended" color="primary" aria-label="add">
-                                <AddIcon sx={{ mr: 1 }} />
-                                Add User
-                            </Fab>
-                        </Link>
+                        <MyButton label='User' type='add' />
                     </div>
                 }
                 icons={tableIcons}
@@ -147,7 +146,7 @@ const UsersPage = () => {
                 components={{
                     Pagination: _ => (
                         <TablePagination
-                            onChangePage={handlePageChange}
+                            onPageChange={handlePageChange}
                             rowsPerPage={10}
                             page={page}
                             count={totalElements}
