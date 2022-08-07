@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Entity
 @NoArgsConstructor
 @Table(name = "rooms")
-public class Room extends BaseEntity {
+public class Room extends BaseEntity implements Comparable<Room> {
 
 	@Builder
 	public Room(Integer id, String name, Set<Image> images, String thumbnail, byte rating, Address address,
@@ -112,13 +112,13 @@ public class Room extends BaseEntity {
 	private RoomPrivacy privacyType;
 
 	@JsonBackReference
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne
 	@JoinColumn(name = "host_id")
 	private User host;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "room", cascade = CascadeType.REMOVE)
-	private List<Booking> bookings;
+	private List<Booking> bookings = new ArrayList<>();
 
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "rooms_rules", joinColumns = @JoinColumn(name = "room_id"), inverseJoinColumns = @JoinColumn(name = "rule_id"))
@@ -161,5 +161,50 @@ public class Room extends BaseEntity {
 		return this.getImages().stream().filter(image -> !image.getImage().equals(this.thumbnail)).map(image -> {
 			return image.getImagePath(this.host.getEmail(), this.getId());
 		}).collect(Collectors.toList());
+	}
+
+	@Transient
+	public Float getAverageRatings() {
+		if (this.bookings.size() > 0) {
+			float totalAverage = this.bookings.stream().reduce(0f,
+					(subtotal, booking) -> {
+						if (booking.getReview() != null) {
+							return subtotal + booking.getAverageRating();
+						}
+
+						return subtotal;
+					},
+					Float::sum);
+
+			return totalAverage / (float) this.getNumberOfReviews();
+		}
+
+		return 0f;
+	}
+
+	@Transient
+	public Integer getNumberOfReviews() {
+		if (this.bookings.size() > 0) {
+			return this.bookings.stream().reduce(0, (subtotal, booking) -> {
+				if (booking.getReview() != null) {
+					return subtotal + 1;
+				}
+
+				return subtotal;
+			}, Integer::sum);
+		}
+
+		return 0;
+	}
+
+	@Override
+	public int compareTo(Room o) {
+		if (this.getBookings().size() > o.getBookings().size()) {
+			return 1;
+		} else if (this.getBookings().size() == o.getBookings().size())
+			return 0;
+		else {
+			return -1;
+		}
 	}
 }

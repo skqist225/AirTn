@@ -28,10 +28,13 @@ import com.airtnt.airtntapp.room.RoomService;
 import com.airtnt.airtntapp.security.UserDetailsImpl;
 import com.airtnt.airtntapp.state.StateService;
 import com.airtnt.airtntapp.user.dto.BookedRoomDTO;
+import com.airtnt.airtntapp.user.dto.CreateHostReviewDTO;
+import com.airtnt.airtntapp.user.dto.CreateHostReviewDTOTest;
 import com.airtnt.airtntapp.user.dto.PostUpdateUserDTO;
 import com.airtnt.airtntapp.user.dto.UpdateUserDTO;
 import com.airtnt.airtntapp.user.dto.UserSexDTO;
 import com.airtnt.airtntapp.user.dto.WishlistsDTO;
+import com.airtnt.airtntapp.userReview.UserReviewService;
 import com.airtnt.entity.Address;
 import com.airtnt.entity.Chat;
 import com.airtnt.entity.City;
@@ -41,8 +44,10 @@ import com.airtnt.entity.Room;
 import com.airtnt.entity.Sex;
 import com.airtnt.entity.State;
 import com.airtnt.entity.User;
+import com.airtnt.entity.UserReview;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -50,6 +55,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -91,6 +97,12 @@ public class UserORestController {
 
 	@Autowired
 	private Environment env;
+
+	@Value("${env}")
+	private String environment;
+
+	@Autowired
+	private UserReviewService UserReviewService;
 
 	@GetMapping("sex")
 	public ResponseEntity<StandardJSONResponse<List<UserSexDTO>>> getSexs() {
@@ -149,95 +161,95 @@ public class UserORestController {
 		Map<String, String> updateData = postUpdateUserDTO.getUpdateData();
 
 		switch (updatedField) {
-		case "firstNameAndLastName": {
-			if (updateData.get("firstName") == null && updateData.get("lastName") == null) {
-				return new BadResponse<User>("First name or last name is required").response();
+			case "firstNameAndLastName": {
+				if (updateData.get("firstName") == null && updateData.get("lastName") == null) {
+					return new BadResponse<User>("First name or last name is required").response();
+				}
+
+				if (updateData.get("firstName") != null) {
+					currentUser.setFirstName(updateData.get("firstName"));
+				}
+				if (updateData.get("lastName") != null) {
+					currentUser.setLastName(updateData.get("lastName"));
+				}
+				savedUser = userService.saveUser(currentUser);
+				break;
 			}
-
-			if (updateData.get("firstName") != null) {
-				currentUser.setFirstName(updateData.get("firstName"));
+			case "sex": {
+				String newSex = updateData.get("sex");
+				Sex sex = newSex.equals("MALE") ? Sex.MALE : newSex.equals("FEMALE") ? Sex.FEMALE : Sex.OTHER;
+				currentUser.setSex(sex);
+				savedUser = userService.saveUser(currentUser);
+				break;
 			}
-			if (updateData.get("lastName") != null) {
-				currentUser.setLastName(updateData.get("lastName"));
+			case "gender": {
+				if (updateData.get("gender") == null) {
+					return new BadResponse<User>("Gender is required").response();
+				}
+				String newSex = updateData.get("gender");
+				Sex sex = newSex.equals("MALE") ? Sex.MALE : newSex.equals("FEMALE") ? Sex.FEMALE : Sex.OTHER;
+				currentUser.setSex(sex);
+				savedUser = userService.saveUser(currentUser);
+				break;
 			}
-			savedUser = userService.saveUser(currentUser);
-			break;
-		}
-		case "sex": {
-			String newSex = updateData.get("sex");
-			Sex sex = newSex.equals("MALE") ? Sex.MALE : newSex.equals("FEMALE") ? Sex.FEMALE : Sex.OTHER;
-			currentUser.setSex(sex);
-			savedUser = userService.saveUser(currentUser);
-			break;
-		}
-		case "gender": {
-			if (updateData.get("gender") == null) {
-				return new BadResponse<User>("Gender is required").response();
+			case "birthdayWeb": {
+				Integer yearOfBirth = Integer.parseInt(updateData.get("yearOfBirth"));
+				Integer monthOfBirth = Integer.parseInt(updateData.get("monthOfBirth"));
+				Integer dayOfBirth = Integer.parseInt(updateData.get("dayOfBirth"));
+
+				currentUser.setBirthday(LocalDate.of(yearOfBirth, monthOfBirth, dayOfBirth));
+				savedUser = userService.saveUser(currentUser);
+				break;
 			}
-			String newSex = updateData.get("gender");
-			Sex sex = newSex.equals("MALE") ? Sex.MALE : newSex.equals("FEMALE") ? Sex.FEMALE : Sex.OTHER;
-			currentUser.setSex(sex);
-			savedUser = userService.saveUser(currentUser);
-			break;
-		}
-		case "birthdayWeb": {
-			Integer yearOfBirth = Integer.parseInt(updateData.get("yearOfBirth"));
-			Integer monthOfBirth = Integer.parseInt(updateData.get("monthOfBirth"));
-			Integer dayOfBirth = Integer.parseInt(updateData.get("dayOfBirth"));
-
-			currentUser.setBirthday(LocalDate.of(yearOfBirth, monthOfBirth, dayOfBirth));
-			savedUser = userService.saveUser(currentUser);
-			break;
-		}
-		case "birthday": {
-			if (updateData.get("birthday") == null) {
-				return new BadResponse<User>("Birthday is required").response();
+			case "birthday": {
+				if (updateData.get("birthday") == null) {
+					return new BadResponse<User>("Birthday is required").response();
+				}
+				LocalDate birthd = LocalDate.parse(updateData.get("birthday"));
+				currentUser.setBirthday(birthd);
+				savedUser = userService.saveUser(currentUser);
+				break;
 			}
-			LocalDate birthd = LocalDate.parse(updateData.get("birthday"));
-			currentUser.setBirthday(birthd);
-			savedUser = userService.saveUser(currentUser);
-			break;
-		}
-		case "address": {
-			Integer countryId = Integer.parseInt(updateData.get("country"));
-			Integer stateId = Integer.parseInt(updateData.get("country"));
-			Integer cityId = Integer.parseInt(updateData.get("country"));
-			String aprtNoAndStreet = updateData.get("aprtNoAndStreet");
+			case "address": {
+				Integer countryId = Integer.parseInt(updateData.get("country"));
+				Integer stateId = Integer.parseInt(updateData.get("country"));
+				Integer cityId = Integer.parseInt(updateData.get("country"));
+				String aprtNoAndStreet = updateData.get("aprtNoAndStreet");
 
-			Country country = countryService.getCountryById(countryId);
-			State state = stateService.getStateById(stateId);
-			City city = cityService.getCityById(cityId);
+				Country country = countryService.getCountryById(countryId);
+				State state = stateService.getStateById(stateId);
+				City city = cityService.getCityById(cityId);
 
-			Address newAddress = new Address(country, state, city, aprtNoAndStreet);
-			currentUser.setAddress(newAddress);
-			savedUser = userService.saveUser(currentUser);
-			break;
-		}
-		case "email": {
-			String newEmail = updateData.get("email");
-			currentUser.setEmail(newEmail);
-			savedUser = userService.saveUser(currentUser);
+				Address newAddress = new Address(country, state, city, aprtNoAndStreet);
+				currentUser.setAddress(newAddress);
+				savedUser = userService.saveUser(currentUser);
+				break;
+			}
+			case "email": {
+				String newEmail = updateData.get("email");
+				currentUser.setEmail(newEmail);
+				savedUser = userService.saveUser(currentUser);
 
-			// return ResponseEntity.ok()
-			// .header(HttpHeaders.SET_COOKIE,
-			// cookiePorcess.writeCookie("user", savedUser.getEmail()).toString())
-			// .body(new StandardJSONResponse<User>(true, savedUser, null));
-		}
-		case "password": {
-			String newPassword = updateData.get("newPassword");
+				// return ResponseEntity.ok()
+				// .header(HttpHeaders.SET_COOKIE,
+				// cookiePorcess.writeCookie("user", savedUser.getEmail()).toString())
+				// .body(new StandardJSONResponse<User>(true, savedUser, null));
+			}
+			case "password": {
+				String newPassword = updateData.get("newPassword");
 
-			currentUser.setPassword(newPassword);
-			userService.encodePassword(currentUser);
-			savedUser = userService.saveUser(currentUser);
-			break;
-		}
-		case "phoneNumber": {
-			String newPhoneNumber = updateData.get("phoneNumber");
+				currentUser.setPassword(newPassword);
+				userService.encodePassword(currentUser);
+				savedUser = userService.saveUser(currentUser);
+				break;
+			}
+			case "phoneNumber": {
+				String newPhoneNumber = updateData.get("phoneNumber");
 
-			currentUser.setPhoneNumber(newPhoneNumber);
-			savedUser = userService.saveUser(currentUser);
-			break;
-		}
+				currentUser.setPhoneNumber(newPhoneNumber);
+				savedUser = userService.saveUser(currentUser);
+				break;
+			}
 		}
 
 		return new OkResponse<User>(savedUser).response();
@@ -258,11 +270,11 @@ public class UserORestController {
 			currentUser.setLastName(postUpdateUserDTO.getLastName());
 		}
 
-		if (postUpdateUserDTO.getGender() == null) {
+		if (postUpdateUserDTO.getSex() == null) {
 			return new BadResponse<User>("Gender is required").response();
 		}
 
-		String newSex = postUpdateUserDTO.getGender();
+		String newSex = postUpdateUserDTO.getSex();
 		Sex sex = newSex.equals("MALE") ? Sex.MALE : newSex.equals("FEMALE") ? Sex.FEMALE : Sex.OTHER;
 		currentUser.setSex(sex);
 
@@ -276,21 +288,15 @@ public class UserORestController {
 		return new OkResponse<User>(userService.saveUser(currentUser)).response();
 	}
 
-	@PutMapping("update-avatar")
-	public ResponseEntity<StandardJSONResponse<User>> updateUserAvatar(
-			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
-			@RequestParam(name = "newAvatar", required = false) MultipartFile newAvatar) throws IOException {
-		User currentUser = userDetailsImpl.getUser();
-
+	public User updateAvatar(User user, MultipartFile newAvatar, boolean isCallFromInternal, String environment)
+			throws IOException {
 		if (newAvatar != null) {
 			String fileName = StringUtils.cleanPath(newAvatar.getOriginalFilename());
 			String uploadDir = "";
-			String environment = env.getProperty("env");
-			System.out.println(environment);
 			if (environment.equals("development")) {
-				uploadDir = "src/main/resources/static/user_images/" + currentUser.getId() + "/";
+				uploadDir = "src/main/resources/static/user_images/" + user.getId() + "/";
 			} else {
-				String filePath = "/opt/tomcat/webapps/ROOT/WEB-INF/classes/static/user_images/" + currentUser.getId()
+				String filePath = "/opt/tomcat/webapps/ROOT/WEB-INF/classes/static/user_images/" + user.getId()
 						+ "/";
 				Path uploadPath = Paths.get(filePath);
 				if (!Files.exists(uploadPath)) {
@@ -300,18 +306,35 @@ public class UserORestController {
 
 					Files.createDirectories(uploadPath, fileAttributes);
 				}
-				uploadDir = GetResource.getResourceAsFile("static/user_images/" + currentUser.getId() + "/");
+				uploadDir = GetResource.getResourceAsFile("static/user_images/" + user.getId() + "/");
 				System.out.println(uploadDir);
 			}
 
 			FileUploadUtil.cleanDir(uploadDir);
 			FileUploadUtil.saveFile(uploadDir, fileName, newAvatar);
-			currentUser.setAvatar(fileName);
-			User savedUser = userService.saveUser(currentUser);
-			return new OkResponse<User>(savedUser).response();
+			user.setAvatar(fileName);
 		} else {
-			return new BadResponse<User>("Please add image").response();
+			if (isCallFromInternal) {
+				return null;
+			}
 		}
+
+		return user;
+	}
+
+	@PutMapping("update-avatar")
+	public ResponseEntity<StandardJSONResponse<User>> updateUserAvatar(
+			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+			@RequestParam(name = "newAvatar", required = false) MultipartFile newAvatar) throws IOException {
+		User user = userDetailsImpl.getUser();
+
+		User savedAvatarUser = updateAvatar(user, newAvatar, true, environment);
+		if (savedAvatarUser != null) {
+			User savedUser = userService.saveUser(savedAvatarUser);
+			return new OkResponse<User>(savedUser).response();
+		}
+
+		return new BadResponse<User>("Please add image").response();
 	}
 
 	@PutMapping("add-to-favoritelists/{roomid}")
@@ -331,7 +354,6 @@ public class UserORestController {
 		} catch (RoomNotFoundException e) {
 			return new BadResponse<String>(e.getMessage()).response();
 		}
-
 	}
 
 	@PutMapping("remove-from-favoritelists/{roomid}")
@@ -349,6 +371,43 @@ public class UserORestController {
 			return new BadResponse<String>("can not sync user data into database").response();
 		} catch (RoomNotFoundException e) {
 			return new BadResponse<String>(e.getMessage()).response();
+		}
+	}
+
+	@PostMapping("create-host-review")
+	public ResponseEntity<StandardJSONResponse<UserReview>> createHostReview(
+			@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+			@RequestBody CreateHostReviewDTO createHostReviewDTO) {
+		User reviewer = userDetailsImpl.getUser();
+		User host;
+		try {
+			host = userService.findById(createHostReviewDTO.getHostId());
+
+			UserReview userReview = new UserReview(host, reviewer, createHostReviewDTO.getReview());
+
+			UserReview savedUserReview = UserReviewService.save(userReview);
+
+			return new OkResponse<UserReview>(savedUserReview).response();
+		} catch (UserNotFoundException e) {
+			return new BadResponse<UserReview>(e.getMessage()).response();
+		}
+	}
+
+	@PostMapping("create-host-review-test")
+	public ResponseEntity<StandardJSONResponse<UserReview>> createHostReview(
+			@RequestBody CreateHostReviewDTOTest createHostReviewDTO) {
+		User host, reviewer;
+		try {
+			reviewer = userService.findById(createHostReviewDTO.getReviewerId());
+			host = userService.findById(createHostReviewDTO.getHostId());
+
+			UserReview userReview = new UserReview(host, reviewer, createHostReviewDTO.getReview());
+
+			UserReview savedUserReview = UserReviewService.save(userReview);
+
+			return new OkResponse<UserReview>(savedUserReview).response();
+		} catch (UserNotFoundException e) {
+			return new BadResponse<UserReview>(e.getMessage()).response();
 		}
 	}
 

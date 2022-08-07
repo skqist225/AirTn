@@ -1,8 +1,13 @@
 export function setUserToLocalStorage(user) {
     if (user) {
-        localStorage.removeItem("user");
-        localStorage.setItem("user", JSON.stringify(user));
-        localStorage.removeItem("authtoken");
-        localStorage.setItem("authtoken", user.token);
+        localStorage.removeItem("admin-user");
+        localStorage.setItem("admin-user", JSON.stringify(user));
+        localStorage.removeItem("admin-authtoken");
+        localStorage.setItem("admin-authtoken", user.token);
     }
+}
+
+export function removeUserFromLocalStorage() {
+    localStorage.removeItem("admin-user");
+    localStorage.removeItem("admin-authtoken");
 }

@@ -72,6 +72,8 @@ const AddUserPage = () => {
         resolver: yupResolver(schema),
     });
 
+    console.log(errors)
+
     const onSubmit = (data, e) => {
         setMyErrors({
             phoneNumber: "",
@@ -202,6 +204,7 @@ const AddUserPage = () => {
                                                         ? errors?.email.message
                                                         : myErrors.email
                                                 }
+                                                autoComplete="nope"
                                                 defaultValue=''
                                                 required
                                             />
@@ -232,6 +235,7 @@ const AddUserPage = () => {
                                                     </InputAdornment>
                                                 }
                                                 label='Password'
+                                                autoComplete="new-password"
                                                 {...register("password")}
                                             />
                                         </FormControl>
@@ -282,17 +286,6 @@ const AddUserPage = () => {
                                             </LocalizationProvider>
                                         </FormControl>
                                     </div>
-                                    <>
-                                        <div className='mb-5'>
-                                            <FormControl fullWidth>
-                                                <TextareaAutosize
-                                                    minRows={3}
-                                                    placeholder='About'
-                                                    style={{ width: "100%" }}
-                                                />
-                                            </FormControl>
-                                        </div>
-                                    </>
                                     <div>
                                         <FormControl fullWidth>
                                             <Button

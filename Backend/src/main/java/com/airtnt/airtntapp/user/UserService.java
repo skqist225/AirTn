@@ -170,9 +170,10 @@ public class UserService {
 
 	public boolean deleteUser(Integer id) throws UserNotFoundException {
 		try {
-			Long countById = userRepository.countById(id);
-			if ((countById == null || countById == 0)) {
-				throw new UserNotFoundException("User not found with id: " + id);
+			User user = this.findById(id);
+
+			if (user.isIdentityVerified()) {
+				return false;
 			}
 
 			userRepository.deleteById(id);
@@ -190,11 +191,6 @@ public class UserService {
 		User user = userRepository.findById(id)
 				.orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
 		return user;
-	}
-
-	public boolean checkPhoneNumber(String phoneNumber) throws UserNotFoundException {
-		User users = userRepository.findByPhoneNumber(phoneNumber).get();
-		return users != null ? true : false;
 	}
 
 	public boolean checkEmail(String email) {

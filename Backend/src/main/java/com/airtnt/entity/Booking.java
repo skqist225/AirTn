@@ -97,6 +97,11 @@ public class Booking extends BaseEntity {
 		return this.getPricePerDay() * this.getNumberOfDays() + this.getSiteFee() + this.getCleanFee();
 	}
 
+	@Transient
+	public float getAverageRating() {
+		return this.getReview().getFinalRating();
+	}
+
 	public Booking(Integer bookingId) {
 		super(bookingId);
 	}

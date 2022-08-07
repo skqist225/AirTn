@@ -172,7 +172,7 @@ const GlobalStyle = createGlobalStyle`
         outline: none;
     }
 
-    [type='text']:focus {
+    [type='text']:focus, [type='email']:focus, [type='url']:focus, [type='password']:focus, [type='number']:focus, [type='date']:focus, [type='datetime-local']:focus, [type='month']:focus, [type='search']:focus, [type='tel']:focus, [type='time']:focus, [type='week']:focus, [multiple]:focus, textarea:focus, select:focus {
         outline: 2px solid transparent;
         outline-offset: 2px;
         --tw-ring-inset: var(--tw-empty,/*!*/ /*!*/);

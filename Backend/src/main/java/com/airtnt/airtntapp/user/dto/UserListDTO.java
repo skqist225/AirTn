@@ -24,7 +24,10 @@ public class UserListDTO {
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate birthday;
     private String role;
+    private boolean emailVerified;
     private boolean phoneVerified;
+    private boolean identityVerified;
+    private Integer numberOfReviews;
 
     public static UserListDTO build(User user) {
         return UserListDTO.builder()
@@ -34,7 +37,10 @@ public class UserListDTO {
                 .sex(user.getSex().toString())
                 .role(user.getRole().getName())
                 .birthday(user.getBirthday())
+                .emailVerified(user.isEmailVerified())
                 .phoneVerified(user.isPhoneVerified())
+                .identityVerified(user.isIdentityVerified())
+                .numberOfReviews(user.getReviews().size())
                 .build();
     }
 }

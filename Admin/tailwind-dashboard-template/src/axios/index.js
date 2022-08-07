@@ -1,6 +1,5 @@
 import axios from "axios";
 
-
 const api = axios.create({
     baseURL: `http://localhost:8080/api`,
     headers: {
@@ -10,7 +9,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(request => {
-    const token = localStorage.getItem("authtoken");
+    const token = localStorage.getItem("admin-authtoken");
     if (token) {
         request.headers["Authorization"] = `Bearer ${token}`;
     }

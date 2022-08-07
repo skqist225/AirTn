@@ -1,5 +1,7 @@
 package com.airtnt.airtntapp.user.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,11 @@ import lombok.Setter;
 public class UpdateUserDTO {
     private String firstName;
     private String lastName;
-    private String gender;
+    private String phoneNumber;
+    private String email;
+    private String password;
+    private String sex;
+    private String about;
     private String birthday;
+    private MultipartFile avatar;
 }

@@ -22,9 +22,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.Future;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Past;
+import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -36,6 +35,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
@@ -70,6 +70,7 @@ public class User extends BaseEntity {
 	@Column(length = 10, nullable = false)
 	private Sex sex;
 
+	@PastOrPresent(message = "Không thể chọn ngày lớn hơn hiện tại")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate birthday;
@@ -121,6 +122,10 @@ public class User extends BaseEntity {
 	@Column(name = "identity_verified", columnDefinition = "boolean default false")
 	private boolean identityVerified = false;
 
+	@Builder.Default
+	@Column(name = "email_verified", columnDefinition = "boolean default false")
+	private boolean emailVerified = false;
+
 	@Column(length = 1024)
 	private String about;
 
@@ -138,6 +143,10 @@ public class User extends BaseEntity {
 
 	@Transient
 	public String token;
+
+	@Builder.Default
+	@OneToMany(mappedBy = "host")
+	private Set<UserReview> reviews = new HashSet<>();
 
 	public User(int id) {
 		super(id);
@@ -190,6 +199,30 @@ public class User extends BaseEntity {
 	}
 
 	@Transient
+	public ArrayNode getTheTwoMostBookedRoom() throws JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayNode roomArray = mapper.createArrayNode();
+
+		if (this.ownedRooms.size() > 0) {
+			for (int i = 0; i < 2; i++) {
+				ObjectNode roomNode = mapper.createObjectNode();
+				ArrayNode imagesNode = mapper.createArrayNode();
+				Room room = this.getOwnedRooms().get(i);
+				room.getImagesPath().forEach(image -> imagesNode.add(image));
+				roomNode.put("id", room.getId()).put("name", room.getName()).put("thumbnail",
+						room.renderThumbnailImage()).put("price", room.getPrice())
+						.put("currencySymbol", room.getCurrency().getSymbol())
+						.put("averageRatings", room.getAverageRatings())
+						.put("numberOfReviews", room.getNumberOfReviews())
+						.set("images", imagesNode);
+				roomArray.add(roomNode);
+			}
+		}
+
+		return roomArray;
+	}
+
+	@Transient
 	@JsonIgnore
 	public static User build(RegisterDTO registerDTO) {
 		Sex sex = registerDTO.getSex().equals("MALE") ? Sex.MALE
@@ -198,6 +231,8 @@ public class User extends BaseEntity {
 		return User.builder().firstName(registerDTO.getFirstName()).lastName(registerDTO.getLastName())
 				.email(registerDTO.getEmail()).password(registerDTO.getPassword()).sex(sex)
 				.birthday(registerDTO.getBirthday()).phoneNumber(registerDTO.getPhoneNumber()).role(new Role(1))
+				.identityVerified(false).phoneVerified(false)
+				.emailVerified(false)
 				.build();
 	}
 

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.airtnt.airtntapp.email.SendEmail;
@@ -31,6 +32,7 @@ import com.airtnt.airtntapp.exception.UserNotFoundException;
 import com.airtnt.airtntapp.jwt.JwtUtils;
 import com.airtnt.airtntapp.response.StandardJSONResponse;
 import com.airtnt.airtntapp.response.error.BadResponse;
+import com.airtnt.airtntapp.response.error.ForbiddenResponse;
 import com.airtnt.airtntapp.response.success.OkResponse;
 import com.airtnt.airtntapp.security.UserDetailsServiceImpl;
 import com.airtnt.airtntapp.user.UserService;
@@ -63,7 +65,8 @@ public class AuthRestController {
 	private JwtUtils jwtUtils;
 
 	@PostMapping("login")
-	public ResponseEntity<StandardJSONResponse<User>> login2(@RequestBody LoginDTO loginDTO) {
+	public ResponseEntity<StandardJSONResponse<User>> login2(@RequestBody LoginDTO loginDTO,
+			@RequestParam(value = "admin", defaultValue = "false") String admin) {
 		try {
 			authenticationManager
 					.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
@@ -73,11 +76,16 @@ public class AuthRestController {
 			User user = userService.findByEmail(loginDTO.getEmail());
 			user.setToken(token);
 
+			if (admin.equals("true") && !user.getRole().getName().equals("Admin")) {
+				return new ForbiddenResponse<User>(
+						"Your account does not have enough privileges to access this resource.").response();
+			}
+
 			return new OkResponse<User>(user).response();
 		} catch (BadCredentialsException e) {
 			return new BadResponse<User>(e.getMessage()).response();
 		} catch (UserNotFoundException e) {
-			throw new RuntimeException(e);
+			return new BadResponse<User>(e.getMessage()).response();
 		}
 	}
 
@@ -87,22 +95,25 @@ public class AuthRestController {
 	}
 
 	@GetMapping("check-phonenumber/{phoneNumber}")
-	public ResponseEntity<StandardJSONResponse<String>> checkPhoneNumer(
-			@PathVariable(value = "phoneNumber") String phoneNumber) throws UserNotFoundException {
-		boolean isUsed = userService.checkPhoneNumber(phoneNumber);
-		if (isUsed) {
+	public ResponseEntity<StandardJSONResponse<String>> checkUsedPhoneNumber(
+			@PathVariable(value = "phoneNumber") String phoneNumber) {
+		try {
+			userService.findByPhoneNumber(phoneNumber);
+
 			return new BadResponse<String>("Phone number has already been taken").response();
-		} else {
+		} catch (UserNotFoundException e) {
 			return new OkResponse<String>("Phone number has not been used by anyone yet").response();
 		}
 	}
 
 	@GetMapping("check-email/{email}")
-	public ResponseEntity<StandardJSONResponse<String>> checkEmail(@PathVariable(value = "email") String email) {
-		boolean isUsed = userService.checkEmail(email);
-		if (isUsed) {
+	public ResponseEntity<StandardJSONResponse<String>> checkUsedEmail(
+			@PathVariable(value = "email") String email) {
+		try {
+			userService.findByEmail(email);
+
 			return new BadResponse<String>("Email has already been taken").response();
-		} else {
+		} catch (UserNotFoundException e) {
 			return new OkResponse<String>("Email has not been used by anyone yet").response();
 		}
 	}

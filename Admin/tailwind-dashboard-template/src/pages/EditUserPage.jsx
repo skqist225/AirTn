@@ -14,9 +14,6 @@ import Select from "@mui/material/Select";
 import SendIcon from "@mui/icons-material/Send";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Controller, useForm } from "react-hook-form";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import {
@@ -28,30 +25,17 @@ import {
     Typography,
 } from "@mui/material";
 import Toast from "../components/notify/Toast";
-import { addUser, fetchUser, userState } from "../features/user/userSlice";
+import { addUser, fetchUser, updateUser, userState } from "../features/user/userSlice";
 import { callToast, getImage } from "../helpers";
 import $ from "jquery";
 import { useParams } from "react-router-dom";
 import { Image } from "../globalStyle";
-
-const schema = yup
-    .object({
-        password: yup.string().min(8, "Password at least 8 characters"),
-        birthday: yup.string().required("Birthday is required"),
-        phoneNumber: yup
-            .string()
-            .matches(
-                /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4}$/,
-                "Phone number must be 10 numbers."
-            ),
-        email: yup.string().email("Invalid email"),
-    })
-    .required();
+import { authState, checkPhoneNumber, checkEmail } from "../features/auth/authSlice";
+import { AddressEdit } from "../components";
+import { useForm } from "react-hook-form";
 
 const AddUserPage = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [birthday, setBirthday] = useState(new Date());
-    const [sex, setSex] = useState("MALE");
     const [showPassword, setShowPassword] = useState(false);
     const [myErrors, setMyErrors] = useState({
         phoneNumber: "",
@@ -63,16 +47,27 @@ const AddUserPage = () => {
         lastName: "",
         phoneNumber: "",
         email: "",
-        sex: "",
-        birthday: "",
-        about: ""
+        password: "",
+        about: "",
     });
+    const [sex, setSex] = useState("MALE");
+    const [birthday, setBirthday] = useState(new Date());
+    const [avatar, setAvatar] = useState(null);
 
     const dispatch = useDispatch();
     const {
         addUserAction: { successMessage, errorMessage },
         get: { user },
+        updateUserAction: { successMessage: uuSuccessMessage, errorMessage: uuErrorMessage },
     } = useSelector(userState);
+
+    const {
+        checkPhoneNumberAction: {
+            successMessage: cpnSuccessMessage,
+            errorMessage: cpnErrorMessage,
+        },
+        checkEmailAction: { successMessage: ceSuccessMessage, errorMessage: ceErrorMessage },
+    } = useSelector(authState);
 
     const { userid } = useParams();
 
@@ -82,43 +77,115 @@ const AddUserPage = () => {
         }
     }, [userid]);
 
+    const { handleSubmit, register } = useForm();
+
     useEffect(() => {
         if (user) {
             setFieldValues({
-                ...user
-            })
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phoneNumber: user.phoneNumber,
+                email: user.email,
+                password: "",
+                about: user.about,
+            });
             setSex(user.sex);
+            setBirthday(new Date(user.birthday));
         }
     }, [user]);
 
+    useEffect(() => {
+        if (uuErrorMessage) {
+        }
+    }, [uuErrorMessage]);
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({
-        resolver: yupResolver(schema),
-    });
+    useEffect(() => {
+        if (uuSuccessMessage) {
+            callToast("success", uuSuccessMessage);
+        }
+    }, [uuSuccessMessage]);
 
-    const onSubmit = (data, e) => {
+    useEffect(() => {
+        if (cpnErrorMessage) {
+            setMyErrors({
+                ...myErrors,
+                phoneNumber: cpnErrorMessage,
+            });
+        }
+    }, [cpnErrorMessage]);
+
+    useEffect(() => {
+        if (cpnSuccessMessage) {
+            setMyErrors({
+                ...myErrors,
+                phoneNumber: "",
+            });
+        }
+    }, [cpnSuccessMessage]);
+
+    useEffect(() => {
+        if (ceErrorMessage) {
+            setMyErrors({
+                ...myErrors,
+                email: ceErrorMessage,
+            });
+        }
+    }, [ceErrorMessage]);
+
+    useEffect(() => {
+        if (ceSuccessMessage) {
+            setMyErrors({
+                ...myErrors,
+                email: "",
+            });
+        }
+    }, [ceSuccessMessage]);
+
+    function processUserBirthday(birthday) {
+        const date = new Date(birthday);
+        const userBirthday = `${date.getFullYear()}-${
+            (date.getMonth() + 1).toString().length === 2
+                ? date.getMonth() + 1
+                : `0${date.getMonth() + 1}`
+        }-${date.getDate().toString().length === 2 ? date.getDate() : `0${date.getDate()}`}`;
+        return userBirthday;
+    }
+
+    const onSubmit = e => {
+        e.preventDefault();
+
         setMyErrors({
             phoneNumber: "",
             birthday: "",
             email: "",
         });
 
-        let userBirthday = data.birthday.split("/");
-        userBirthday = `${userBirthday[2]}-${userBirthday[0]}-${userBirthday[1]}`;
+        const updateObject = {
+            ...fieldValues,
+            sex,
+            birthday: processUserBirthday(birthday),
+        };
+        delete updateObject["password"];
+        if (fieldValues.password) {
+            updateObject["password"] = fieldValues.password;
+        }
+        if (avatar) {
+            updateObject["avatar"] = avatar;
+        }
 
-        console.log(data);
+        console.log(updateObject);
+        const formData = new FormData();
+        for (const key in updateObject) {
+            formData.set(key, updateObject[key]);
+        }
 
-        // if (newAvatar) {
-        // const formData = new FormData();
-        // formData.set("newAvatar", newAvatar);
-        // dispatch(updateUserAvatar(formData));
-        // }
-
-        // dispatch(addUser({ ...data, birthday: userBirthday, sex }));
+        console.log(formData);
+        dispatch(
+            updateUser({
+                id: userid,
+                formData,
+            })
+        );
     };
 
     const handleClickShowPassword = () => {
@@ -136,39 +203,28 @@ const AddUserPage = () => {
     useEffect(() => {
         if (successMessage) {
             callToast("success", successMessage);
-            clearFields();
+            // clearFields();
         }
     }, [successMessage]);
 
-    useEffect(() => {
-        if (errorMessage) {
-            if (errorMessage.includes("Email")) {
-                setMyErrors({
-                    ...myErrors,
-                    email: errorMessage,
-                });
-            } else if (errorMessage.includes("Phone number")) {
-                setMyErrors({
-                    ...myErrors,
-                    phoneNumber: errorMessage,
-                });
-            } else {
-                setMyErrors({
-                    ...myErrors,
-                    birthday: errorMessage,
-                });
-            }
-        }
-    }, [errorMessage]);
-
-    const handleChange = (e) => {
+    const handleChange = e => {
         e.preventDefault();
+
+        const { name, value } = e.currentTarget;
 
         setFieldValues({
             ...fieldValues,
-            [e.currentTarget.name]: e.currentTarget.value
-        })
-    }
+            [name]: value,
+        });
+
+        if (name === "phoneNumber" && value.length === 10 && user.phoneNumber !== value) {
+            dispatch(checkPhoneNumber(value));
+        } else if (name === "email" && user.email !== value) {
+            dispatch(checkEmail(value));
+        }
+    };
+
+    console.log(user.addressDetails);
 
     return (
         <>
@@ -185,8 +241,8 @@ const AddUserPage = () => {
                         Edit User
                     </Typography>
                     <Divider />
-                    <div className="flex w-full justify-center my-10">
-                        <div className="flex-initial w-30">
+                    <div className='flex w-full justify-center my-10'>
+                        <div className='flex-initial w-30'>
                             <div id='udpleftBlock'>
                                 <div>
                                     <span>User Avatar:</span>
@@ -196,31 +252,33 @@ const AddUserPage = () => {
                                         size='128px'
                                         className='mb-4'
                                     />
-                                    <Button variant="contained" component="label">
+                                    <Button variant='contained' component='label'>
                                         Upload
-                                        <input hidden accept="image/*" multiple type="file" {...register('newAvatar')} />
+                                        <input
+                                            hidden
+                                            name='newAvatar'
+                                            accept='image/*'
+                                            type='file'
+                                            onChange={e => {
+                                                setAvatar(e.target.files[0]);
+                                            }}
+                                        />
                                     </Button>
                                 </div>
                             </div>
                         </div>
-                        <div className='flex-initial' style={{ width: '500px' }}>
+                        <div className='flex-initial' style={{ width: "500px" }}>
                             <div className='flex justify-center w-full'>
                                 <div className='flex-col w-10/12'>
-                                    <form
-                                        onSubmit={e => {
-                                            e.preventDefault();
-                                            handleSubmit(onSubmit)(e);
-                                        }}
-                                        id='addUserForm'
-                                    >
+                                    <form onSubmit={onSubmit} id='addUserForm'>
                                         <div className='mb-5'>
                                             <FormControl fullWidth>
                                                 <TextField
                                                     label={"First Name"}
-                                                    {...register("firstName")}
-                                                    defaultValue=""
+                                                    name='firstName'
                                                     value={fieldValues.firstName}
                                                     onChange={handleChange}
+                                                    defaultValue=''
                                                     required
                                                 />
                                             </FormControl>
@@ -229,10 +287,10 @@ const AddUserPage = () => {
                                             <FormControl fullWidth>
                                                 <TextField
                                                     label={"Last Name"}
-                                                    {...register("lastName")}
-                                                    defaultValue=""
+                                                    name='lastName'
                                                     value={fieldValues.lastName}
                                                     onChange={handleChange}
+                                                    defaultValue=''
                                                     required
                                                 />
                                             </FormControl>
@@ -241,20 +299,12 @@ const AddUserPage = () => {
                                             <FormControl fullWidth>
                                                 <TextField
                                                     label={"Phone Number"}
-                                                    {...register("phoneNumber")}
-                                                    error={
-                                                        errors?.phoneNumber
-                                                            ? true
-                                                            : !!myErrors.phoneNumber
-                                                    }
-                                                    helperText={
-                                                        errors?.phoneNumber
-                                                            ? errors?.phoneNumber.message
-                                                            : myErrors.phoneNumber
-                                                    }
-                                                    defaultValue=''
+                                                    name='phoneNumber'
+                                                    error={!!myErrors.phoneNumber}
+                                                    helperText={myErrors.phoneNumber}
                                                     value={fieldValues.phoneNumber}
                                                     onChange={handleChange}
+                                                    defaultValue=''
                                                     required
                                                 />
                                             </FormControl>
@@ -264,22 +314,19 @@ const AddUserPage = () => {
                                             <FormControl fullWidth>
                                                 <TextField
                                                     label={"Email"}
-                                                    {...register("email")}
-                                                    error={errors?.email ? true : !!myErrors.email}
-                                                    helperText={
-                                                        errors?.email
-                                                            ? errors?.email.message
-                                                            : myErrors.email
-                                                    }
-                                                    autoComplete='false'
-                                                    defaultValue=''
+                                                    name='email'
+                                                    error={!!myErrors.email}
+                                                    helperText={myErrors.email}
+                                                    autoComplete='nope'
                                                     value={fieldValues.email}
                                                     onChange={handleChange}
+                                                    type='email'
+                                                    defaultValue=''
                                                     required
+                                                    disabled
                                                 />
                                             </FormControl>
                                         </div>
-
 
                                         <div className='mb-5'>
                                             <FormControl fullWidth variant='outlined'>
@@ -293,7 +340,9 @@ const AddUserPage = () => {
                                                             <IconButton
                                                                 aria-label='toggle password visibility'
                                                                 onClick={handleClickShowPassword}
-                                                                onMouseDown={handleMouseDownPassword}
+                                                                onMouseDown={
+                                                                    handleMouseDownPassword
+                                                                }
                                                                 edge='end'
                                                             >
                                                                 {showPassword ? (
@@ -305,10 +354,11 @@ const AddUserPage = () => {
                                                         </InputAdornment>
                                                     }
                                                     label='Password'
-                                                    defaultValue=""
-                                                    value=""
+                                                    name='password'
+                                                    defaultValue=''
+                                                    value={fieldValues.password}
                                                     onChange={handleChange}
-                                                    {...register("password")}
+                                                    autoComplete='new-password'
                                                 />
                                             </FormControl>
                                         </div>
@@ -318,10 +368,10 @@ const AddUserPage = () => {
                                                 <InputLabel>Sex</InputLabel>
                                                 <Select
                                                     label='Sex'
-                                                    defaultValue=""
+                                                    defaultValue=''
                                                     value={sex}
-                                                    onChange={(e) => {
-                                                        setSex(e.target.value)
+                                                    onChange={e => {
+                                                        setSex(e.target.value);
                                                     }}
                                                 >
                                                     <MenuItem value='MALE'>MALE</MenuItem>
@@ -335,25 +385,15 @@ const AddUserPage = () => {
                                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                                     <DatePicker
                                                         label='Birth Day'
+                                                        name='birthday'
                                                         value={birthday}
                                                         onChange={newValue => {
                                                             setBirthday(newValue);
                                                         }}
+                                                        error={!!myErrors.birthday}
+                                                        helperText={myErrors.birthday}
                                                         renderInput={params => (
-                                                            <TextField
-                                                                {...params}
-                                                                {...register("birthday")}
-                                                                error={
-                                                                    errors?.birthday
-                                                                        ? true
-                                                                        : !!myErrors.birthday
-                                                                }
-                                                                helperText={
-                                                                    errors?.birthday
-                                                                        ? errors?.birthday.message
-                                                                        : myErrors.birthday
-                                                                }
-                                                            />
+                                                            <TextField {...params} />
                                                         )}
                                                     />
                                                 </LocalizationProvider>
@@ -365,15 +405,37 @@ const AddUserPage = () => {
                                                     <TextareaAutosize
                                                         minRows={3}
                                                         placeholder='About'
+                                                        name='about'
                                                         style={{ width: "100%" }}
-                                                        defaultValue=""
+                                                        defaultValue=''
                                                         value={fieldValues.about}
-                                                        {...register('about')}
                                                         onChange={handleChange}
                                                     />
                                                 </FormControl>
                                             </div>
                                         </>
+                                        {user && user.addressDetails && (
+                                            <AddressEdit
+                                                register={register}
+                                                address={user.addressDetails}
+                                                countryDefaultValue={
+                                                    user.addressDetails &&
+                                                    user.addressDetails.country
+                                                        ? user.addressDetails.country.id
+                                                        : 216
+                                                }
+                                                stateDefaultValue={
+                                                    user.addressDetails && user.addressDetails.state
+                                                        ? user.addressDetails.state.id
+                                                        : 120
+                                                }
+                                                cityDefaultValue={
+                                                    user.addressDetails && user.addressDetails.city
+                                                        ? user.addressDetails.city.id
+                                                        : 8618
+                                                }
+                                            />
+                                        )}
                                         <div>
                                             <FormControl fullWidth>
                                                 <Button
@@ -381,7 +443,7 @@ const AddUserPage = () => {
                                                     endIcon={<SendIcon />}
                                                     type='submit'
                                                 >
-                                                    Add
+                                                    Update
                                                 </Button>
                                             </FormControl>
                                         </div>

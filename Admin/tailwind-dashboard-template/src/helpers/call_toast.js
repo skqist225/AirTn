@@ -1,10 +1,10 @@
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 export default function callToast(status, message) {
     switch (status) {
-        case 'error': {
-            toast.error('🦄' + message, {
-                position: 'top-center',
+        case "error": {
+            toast.error(message, {
+                position: "top-center",
                 autoClose: 5000,
                 hideProgressBar: false,
                 closeOnClick: true,
@@ -14,9 +14,9 @@ export default function callToast(status, message) {
             });
             break;
         }
-        case 'warning': {
-            toast.warn('🦄' + message, {
-                position: 'top-center',
+        case "warning": {
+            toast.warn(message, {
+                position: "top-center",
                 autoClose: 5000,
                 hideProgressBar: false,
                 closeOnClick: true,
@@ -26,9 +26,9 @@ export default function callToast(status, message) {
             });
             break;
         }
-        case 'success': {
-            toast.success('🦄' + message, {
-                position: 'top-center',
+        case "success": {
+            toast.success("🦄" + message, {
+                position: "top-center",
                 autoClose: 5000,
                 hideProgressBar: false,
                 closeOnClick: true,

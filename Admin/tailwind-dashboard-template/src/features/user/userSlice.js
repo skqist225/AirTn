@@ -20,7 +20,6 @@ export const fetchUser = createAsyncThunk(
     async (id, { dispatch, getState, rejectWithValue }) => {
         try {
             const { data } = await api.get(`/admin/users/${id}`);
-            console.log(data);
 
             return { data };
         } catch (error) {}
@@ -53,6 +52,23 @@ export const deleteUser = createAsyncThunk(
     }
 );
 
+export const updateUser = createAsyncThunk(
+    "user/updateUser",
+    async ({ id, formData }, { dispatch, rejectWithValue }) => {
+        try {
+            const { data } = await api.put(`/admin/users/${id}/update`, formData, {
+                headers: {
+                    "Content-Type": "multipart/formData",
+                },
+            });
+
+            return { data };
+        } catch ({ data: { error } }) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
 export const fetchWishlistsIDsOfCurrentUser = createAsyncThunk(
     "user/fetchWishlistsIDsOfCurrentUser",
     async (_, { dispatch, getState, rejectWithValue }) => {
@@ -68,38 +84,6 @@ export const fetchWishlistsOfCurrentUser = createAsyncThunk(
     async (_, { dispatch, getState, rejectWithValue }) => {
         try {
             const { data } = await api.get(`/user/wishlists`);
-            return { data };
-        } catch (error) {}
-    }
-);
-
-export const updateUserInfo = createAsyncThunk(
-    "user/updateUserInfo",
-    async (updatedInfo, { dispatch, getState, rejectWithValue }) => {
-        try {
-            const { data } = await api.post(`/user/update-personal-info`, updatedInfo);
-            //update local user info
-            if (data) setUserToLocalStorage(data);
-
-            return { data };
-        } catch (error) {}
-    }
-);
-
-export const updateUserAvatar = createAsyncThunk(
-    "user/updateUserAvatar",
-    async (formData, { dispatch, getState, rejectWithValue }) => {
-        try {
-            const { data } = await api.put(`/user/update-avatar`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-            if (data) {
-                console.log(data);
-                setUserToLocalStorage(data);
-            }
-
             return { data };
         } catch (error) {}
     }
@@ -150,6 +134,11 @@ const initialState = {
         successMessage: null,
         errorMessage: null,
     },
+    updateUserAction: {
+        loading: true,
+        successMessage: null,
+        errorMessage: null,
+    },
 };
 
 const userSlice = createSlice({
@@ -158,11 +147,6 @@ const userSlice = createSlice({
     reducers: {
         setUser: (state, { payload }) => {
             state.user = payload;
-        },
-        clearAddUserAction: (state, { payload }) => {
-            state.addUserAction.loading = true;
-            state.addUserAction.successMessage = null;
-            state.addUserAction.errorMessage = null;
         },
     },
     extraReducers: builder => {
@@ -178,30 +162,49 @@ const userSlice = createSlice({
                 state.get.user = payload.data;
             })
             .addCase(addUser.pending, (state, { payload }) => {
-                state.loading = true;
+                state.updateUserAction.loading = true;
                 state.addUserAction.successMessage = null;
                 state.addUserAction.errorMessage = null;
             })
             .addCase(addUser.fulfilled, (state, { payload }) => {
-                state.loading = false;
+                state.updateUserAction.loading = false;
                 if (payload.data) {
                     state.addUserAction.successMessage = "Add User Successfully";
                 }
             })
             .addCase(deleteUser.pending, (state, { payload }) => {
-                state.loading = true;
+                state.deleteUserAction.loading = true;
                 state.deleteUserAction.successMessage = null;
                 state.deleteUserAction.errorMessage = null;
             })
             .addCase(deleteUser.fulfilled, (state, { payload }) => {
-                state.loading = false;
+                state.deleteUserAction.loading = false;
                 if (payload.data) {
                     state.deleteUserAction.successMessage = "Delete User Successfully";
                 }
             })
+            .addCase(deleteUser.rejected, (state, { payload }) => {
+                state.deleteUserAction.loading = false;
+                state.deleteUserAction.errorMessage = payload;
+            })
             .addCase(addUser.rejected, (state, { payload }) => {
-                state.loading = false;
+                state.updateUserAction.loading = false;
                 state.addUserAction.errorMessage = payload;
+            })
+            .addCase(updateUser.pending, (state, { payload }) => {
+                state.updateUserAction.loading = true;
+                state.updateUserAction.successMessage = null;
+                state.updateUserAction.errorMessage = null;
+            })
+            .addCase(updateUser.fulfilled, (state, { payload }) => {
+                state.updateUserAction.loading = false;
+                if (payload.data) {
+                    state.updateUserAction.successMessage = "Update User Successfully";
+                }
+            })
+            .addCase(updateUser.rejected, (state, { payload }) => {
+                state.updateUserAction.loading = false;
+                state.updateUserAction.errorMessage = payload;
             })
             .addCase(fetchWishlistsIDsOfCurrentUser.pending, (state, { payload }) => {
                 state.wishlistsIDsFetching = true;
@@ -219,17 +222,6 @@ const userSlice = createSlice({
             .addCase(fetchBookedRooms.fulfilled, (state, { payload }) => {
                 state.bookedRooms = payload?.data;
             })
-            .addCase(updateUserInfo.fulfilled, (state, { payload }) => {
-                state.update.loading = false;
-                state.user = payload?.data;
-            })
-            .addCase(updateUserInfo.pending, (state, _) => {
-                state.update.loading = true;
-            })
-            .addCase(updateUserAvatar.fulfilled, (state, { payload }) => {
-                state.user = payload?.data;
-                state.update.loading = false;
-            })
             .addMatcher(isAnyOf(fetchWishlistsOfCurrentUser.rejected), (state, { payload }) => {
                 state.loading = false;
                 if (payload) state.errorMessage = payload;
@@ -237,6 +229,6 @@ const userSlice = createSlice({
     },
 });
 
-export const { setUser, clearAddUserAction } = userSlice.actions;
+export const { setUser } = userSlice.actions;
 export const userState = state => state.user;
 export default userSlice.reducer;

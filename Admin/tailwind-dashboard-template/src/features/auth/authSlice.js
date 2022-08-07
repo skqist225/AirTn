@@ -1,13 +1,14 @@
 import { createSlice, createAsyncThunk, isAnyOf } from "@reduxjs/toolkit";
 import api from "../../axios";
-import { setUserToLocalStorage } from "../common";
+import { removeUserFromLocalStorage, setUserToLocalStorage } from "../common";
 import { setUser } from "../user/userSlice";
 
 export const login = createAsyncThunk(
     "auth/login",
     async (loginInfo, { rejectWithValue, dispatch }) => {
         try {
-            const { data } = await api.post("/auth/login", loginInfo);
+            const { data } = await api.post("/auth/login?admin=true", loginInfo);
+
             if (data) {
                 setUserToLocalStorage(data);
                 dispatch(setUser(data));
@@ -19,6 +20,21 @@ export const login = createAsyncThunk(
         }
     }
 );
+
+export const logout = createAsyncThunk("auth/logout", async (_, { rejectWithValue, dispatch }) => {
+    try {
+        const { data } = await api.get("/auth/logout");
+
+        if (data) {
+            removeUserFromLocalStorage();
+            dispatch(setUser(null));
+        }
+
+        return { data };
+    } catch ({ data: { error } }) {
+        return rejectWithValue(error);
+    }
+});
 
 export const resetPassword = createAsyncThunk(
     "auth/resetPassword",
@@ -51,16 +67,62 @@ export const register = createAsyncThunk("auth/register", async (user, { rejectW
     try {
         const { data } = await api.post("/auth/register", user);
         return { data };
-    } catch ({ data: { errorMessage } }) {
-        return rejectWithValue(errorMessage);
+    } catch ({ data: { error } }) {
+        return rejectWithValue(error);
     }
 });
+
+export const checkPhoneNumber = createAsyncThunk(
+    "auth/checkPhoneNumber",
+    async (phoneNumber, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get(`auth/check-phonenumber/${phoneNumber}`);
+
+            return { data };
+        } catch ({ data: { error } }) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
+export const checkEmail = createAsyncThunk(
+    "auth/checkEmail",
+    async (email, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get(`auth/check-email/${email}`);
+
+            return { data };
+        } catch ({ data: { error } }) {
+            return rejectWithValue(error);
+        }
+    }
+);
 
 const initialState = {
     user: null,
     loading: true,
     errorMessage: null,
     successMessage: "",
+    loginAction: {
+        loading: true,
+        errorMessage: null,
+        successMessage: null,
+    },
+    logoutAction: {
+        loading: true,
+        errorMessage: null,
+        successMessage: null,
+    },
+    checkPhoneNumberAction: {
+        loading: true,
+        errorMessage: null,
+        successMessage: null,
+    },
+    checkEmailAction: {
+        loading: true,
+        errorMessage: null,
+        successMessage: null,
+    },
 };
 
 const authSlice = createSlice({
@@ -83,8 +145,53 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.user = payload.data;
             })
+            .addCase(login.pending, (state, { payload }) => {
+                state.loginAction.loading = true;
+                state.loginAction.errorMessage = null;
+                state.loginAction.successMessage = null;
+            })
             .addCase(login.fulfilled, (state, { payload }) => {
-                state.loading = false;
+                state.loginAction.loading = false;
+                state.loginAction.successMessage = "Login successfully";
+            })
+            .addCase(login.rejected, (state, { payload }) => {
+                state.loginAction.loading = false;
+                state.loginAction.errorMessage = payload;
+            })
+            .addCase(logout.pending, (state, { payload }) => {
+                state.logoutAction.loading = true;
+                state.logoutAction.errorMessage = null;
+                state.logoutAction.successMessage = null;
+            })
+            .addCase(logout.fulfilled, (state, { payload }) => {
+                state.logoutAction.loading = false;
+                state.logoutAction.successMessage = "Logout successfully";
+            })
+            .addCase(checkPhoneNumber.pending, (state, { payload }) => {
+                state.checkPhoneNumberAction.loading = true;
+                state.checkPhoneNumberAction.errorMessage = null;
+                state.checkPhoneNumberAction.successMessage = null;
+            })
+            .addCase(checkPhoneNumber.fulfilled, (state, { payload }) => {
+                state.checkPhoneNumberAction.loading = false;
+                state.checkPhoneNumberAction.successMessage = payload;
+            })
+            .addCase(checkPhoneNumber.rejected, (state, { payload }) => {
+                state.checkPhoneNumberAction.loading = false;
+                state.checkPhoneNumberAction.errorMessage = payload;
+            })
+            .addCase(checkEmail.pending, (state, { payload }) => {
+                state.checkEmailAction.loading = true;
+                state.checkEmailAction.errorMessage = null;
+                state.checkEmailAction.successMessage = null;
+            })
+            .addCase(checkEmail.fulfilled, (state, { payload }) => {
+                state.checkEmailAction.loading = false;
+                state.checkEmailAction.successMessage = payload;
+            })
+            .addCase(checkEmail.rejected, (state, { payload }) => {
+                state.checkEmailAction.loading = false;
+                state.checkEmailAction.errorMessage = payload;
             })
             .addCase(
                 forgotPassword.fulfilled,
@@ -100,7 +207,6 @@ const authSlice = createSlice({
 
             .addMatcher(
                 isAnyOf(
-                    login.pending,
                     // logout.pending,
                     forgotPassword.pending,
                     resetPassword.pending
@@ -112,7 +218,6 @@ const authSlice = createSlice({
             )
             .addMatcher(
                 isAnyOf(
-                    login.rejected,
                     // logout.rejected,
                     forgotPassword.rejected,
                     resetPassword.rejected

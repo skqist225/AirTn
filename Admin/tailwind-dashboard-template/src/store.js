@@ -5,13 +5,13 @@ import {
     authSlice,
     bookingSlice,
     categorySlice,
-    // citySlice,
-    // countrySlice,
+    citySlice,
+    countrySlice,
     privacySlice,
     ruleSlice,
     roomSlice,
     userSlice,
-    // stateSlice,
+    stateSlice,
     // reviewSlice,
     // earningSlice,
     // inboxSlice,
@@ -22,8 +22,8 @@ const rootReducer = combineReducers({
     auth: authSlice,
     booking: bookingSlice,
     category: categorySlice,
-    // city: citySlice,
-    // country: countrySlice,
+    city: citySlice,
+    country: countrySlice,
     // earning: earningSlice,
     // inbox: inboxSlice,
     privacy: privacySlice,
@@ -31,10 +31,12 @@ const rootReducer = combineReducers({
     room: roomSlice,
     // review: reviewSlice,
     user: userSlice,
-    // state: stateSlice,
+    state: stateSlice,
 });
 
-const localUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+const localUser = localStorage.getItem("admin-user")
+    ? JSON.parse(localStorage.getItem("admin-user"))
+    : null;
 
 const store = configureStore({
     reducer: rootReducer,
@@ -70,6 +72,11 @@ const store = configureStore({
                 errorMessage: "",
             },
             deleteUserAction: {
+                loading: true,
+                successMessage: null,
+                errorMessage: null,
+            },
+            updateUserAction: {
                 loading: true,
                 successMessage: null,
                 errorMessage: null,

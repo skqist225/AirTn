@@ -18,12 +18,12 @@ import DashboardCard10 from "../partials/dashboard/DashboardCard10";
 import DashboardCard11 from "../partials/dashboard/DashboardCard11";
 import DashboardCard12 from "../partials/dashboard/DashboardCard12";
 import DashboardCard13 from "../partials/dashboard/DashboardCard13";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RoomsPage, BookingsPage, UsersPage, CategoriesPage, AmenitiesPage, RulesPage, PrivaciesPage } from ".";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { fetchRooms } from "../features/room/roomSlice";
 import { fetchBookings } from "../features/booking/bookingSlice";
-import { fetchUsers } from "../features/user/userSlice";
+import { fetchUsers, userState } from "../features/user/userSlice";
 import { fetchCategories } from "../features/category/categorySlice";
 import { fetchAmenities } from "../features/amenity/amenitySlice";
 import { fetchRules } from "../features/rule/ruleSlice";
@@ -33,7 +33,10 @@ function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch();
 
+  const navigate = useNavigate();
+
   const { pathname } = useLocation();
+  const { user } = useSelector(userState);
 
   useEffect(() => {
     console.log(pathname)
@@ -69,6 +72,12 @@ function Dashboard() {
       }
     }
   }, [pathname]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [])
 
   return (
     <div className='flex h-screen overflow-hidden'>

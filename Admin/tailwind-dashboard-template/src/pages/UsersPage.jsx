@@ -42,6 +42,13 @@ const UsersPage = () => {
         }
     }, [successMessage])
 
+
+    useEffect(() => {
+        if (errorMessage) {
+            callToast("error", errorMessage);
+        }
+    }, [errorMessage])
+
     const roomColumns = [
         {
             title: "Id",
@@ -71,9 +78,9 @@ const UsersPage = () => {
             field: "role",
         },
         {
-            title: "Phone Verified",
-            field: "phoneVerified",
-            render: rowData => <span>{rowData.phoneVerified}</span>,
+            title: "Identity Verified",
+            field: "identityVerified",
+            render: rowData => <span>{console.log(rowData.identityVerified)}{rowData.identityVerified}</span>,
         },
         {
             title: "Action",
@@ -93,7 +100,9 @@ const UsersPage = () => {
                         </Link>
                         <Button variant='outlined' color='error' onClick={() => {
                             handleDelete(rowData.id);
-                        }}>
+                        }}
+                            disabled={rowData.identityVerified}
+                        >
                             <DeleteIcon />
                         </Button>
                     </Stack>
